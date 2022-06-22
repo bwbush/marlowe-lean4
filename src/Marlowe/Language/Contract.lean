@@ -1,12 +1,12 @@
 
 
-import Marlowe.Semantics.Primitives
+import Marlowe.Primitives
 
 
-namespace Marlowe.Semantics.Contract
+namespace Marlowe.Language.Contract
 
 
-open Marlowe.Semantics.Primitives
+open Marlowe.Primitives
 
 
 def Timeout := POSIXTime
@@ -144,4 +144,4 @@ export CaseT (Case MerkleizedCase)
 export Contract (Close Pay If When Let Assert)
 
 
-end Marlowe.Semantics.Contract
+end Marlowe.Language.Contract

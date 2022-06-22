@@ -1,14 +1,14 @@
 
 
-import Marlowe.Semantics.Contract
-import Marlowe.Semantics.Primitives
+import Marlowe.Language.Contract
+import Marlowe.Primitives
 
 
-namespace Marlowe.Semantics.Input
+namespace Marlowe.Language.Input
 
 
-open Marlowe.Semantics.Contract
-open Marlowe.Semantics.Primitives
+open Marlowe.Language.Contract
+open Marlowe.Primitives
 
 
 def ChosenNum := Integer
@@ -25,4 +25,4 @@ deriving Repr
 export InputContent (IDeposit IChoice INotify)
 
 
-end Marlowe.Semantics.Input
+end Marlowe.Language.Input

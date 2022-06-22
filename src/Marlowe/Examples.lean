@@ -1,12 +1,12 @@
 
 
-import Marlowe.Semantics.Contract
+import Marlowe.Language.Contract
 
 
 namespace Marlowe.Examples
 
 
-open Marlowe.Semantics.Contract
+open Marlowe.Language.Contract
 
 
 def closeContract : Contract :=

@@ -1,12 +1,12 @@
 
 
 import Marlowe.Examples
-import Marlowe.Semantics.Types
+import Marlowe.Language
 
 
 open Marlowe.Examples
-open Marlowe.Semantics.Contract
-open Marlowe.Semantics.Input
+open Marlowe.Language.Contract
+open Marlowe.Language.Input
 
 
 #eval (Role "abc")

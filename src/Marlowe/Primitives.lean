@@ -1,6 +1,6 @@
 
 
-namespace Marlowe.Semantics.Primitives
+namespace Marlowe.Primitives
 
 
 def ByteString :=
@@ -25,4 +25,4 @@ def POSIXTime := Int
 deriving instance Ord, Repr for POSIXTime
 
 
-end Marlowe.Semantics.Primitives
+end Marlowe.Primitives

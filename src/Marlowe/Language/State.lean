@@ -1,17 +1,17 @@
 
 
-import Marlowe.Semantics.Contract
-import Marlowe.Semantics.Input
-import Marlowe.Semantics.Primitives
+import Marlowe.Language.Contract
+import Marlowe.Language.Input
+import Marlowe.Primitives
 import Std.Data.RBMap
 
 
-namespace Marlowe.Semantics.State
+namespace Marlowe.Language.State
 
 
-open Marlowe.Semantics.Contract
-open Marlowe.Semantics.Input
-open Marlowe.Semantics.Primitives
+open Marlowe.Language.Contract
+open Marlowe.Language.Input
+open Marlowe.Primitives
 open Std (RBMap)
 
 
@@ -48,4 +48,4 @@ deriving Repr
 export Environment (timeInterval)
 
 
-end Marlowe.Semantics.State
+end Marlowe.Language.State

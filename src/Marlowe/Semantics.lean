@@ -1,9 +1,5 @@
 
 
-import Marlowe.Semantics.Types
-
-
-namespace Marlowe.Semantics
-
-
-end Marlowe.Semantics
+import Marlowe.Semantics.Act
+import Marlowe.Semantics.Evaluate
+import Marlowe.Semantics.Operate
