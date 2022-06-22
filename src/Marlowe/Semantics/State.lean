@@ -15,8 +15,10 @@ open Marlowe.Semantics.Primitives
 open Std (RBMap)
 
 
-def compareAT (_at : AccountId × TokenT) (_at' : AccountId × TokenT) : Ordering :=
-  Ordering.lt
+def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ordering
+  | (a0, t0), (a1, t1) => match compare a0 a1 with
+                          | Ordering.eq => compare t0 t1
+                          | cmp         => cmp
 
 
 def Accounts := RBMap (AccountId × TokenT) Integer compareAT
