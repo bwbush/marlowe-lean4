@@ -15,8 +15,20 @@ open Marlowe.Primitives (fromInteger)
 open Std.RBMap (contains findD)
 
 
-private def divide (num : Int) (den : Int) : Int :=
-  num / den  -- FIXME: This is intentionally incorrect.
+def divide (num : Int) (den : Int) : Int :=
+  if num == 0 || den == 0
+    then 0
+    else
+      let sig := if num * den > 0 then 1 else -1
+      let num' : Nat := Int.natAbs num
+      let den' : Nat := Int.natAbs den
+      let rat := num' / den'
+      let rem := num' % den'
+      match compare (2 * rem) den', rat % 2 == 0 with
+      | Ordering.lt, _     => sig * rat
+      | Ordering.gt, _     => sig * (rat + 1)
+      | _          , true  => sig * rat
+      | _          , false => sig * (rat + 1)
 
 
 mutual

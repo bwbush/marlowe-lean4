@@ -2,7 +2,7 @@
 
 import Marlowe.Examples
 import Marlowe.Language
-import Marlowe.Proof.Observation
+import Marlowe.Proof
 
 open Marlowe.Examples
 open Marlowe.Language.Contract
