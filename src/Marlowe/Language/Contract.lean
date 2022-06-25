@@ -107,7 +107,7 @@ mutual
 
 end
 
-export Value (AvailableMoney Constant NegValue AddValue SubValue MulValue DivValue Scale ChoiceValue TimeIntervalStart TimeIntervalEnd Cond)
+export Value (AvailableMoney Constant NegValue AddValue SubValue MulValue DivValue Scale ChoiceValue TimeIntervalStart TimeIntervalEnd UseValue Cond)
 
 export Observation (AndObs OrObs NotObs ChoseSomething ValueGE ValueGT ValueLT ValueLE ValueEQ TrueObs FalseObs)
 

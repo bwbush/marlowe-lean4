@@ -2,11 +2,14 @@
 
 import Marlowe.Examples
 import Marlowe.Language
-
+import Marlowe.Proof.Observation
 
 open Marlowe.Examples
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
+open Marlowe.Proof (falsity)
+
+#check falsity
 
 
 #eval (Role "abc")

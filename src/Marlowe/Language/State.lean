@@ -3,7 +3,7 @@
 import Marlowe.Language.Contract
 import Marlowe.Language.Input
 import Marlowe.Primitives
-import Std.Data.RBMap
+import Std
 
 
 namespace Marlowe.Language.State
@@ -15,7 +15,7 @@ open Marlowe.Primitives
 open Std (RBMap)
 
 
-def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ordering
+private def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ordering
   | (a0, t0), (a1, t1) => match compare a0 a1 with
                           | Ordering.eq => compare t0 t1
                           | cmp         => cmp
@@ -36,7 +36,7 @@ deriving Repr
 export State (accounts choices boundValues minTime)
 
 
-def TimeInterval := Prod POSIXTime POSIXTime
+def TimeInterval := POSIXTime × POSIXTime
 
 deriving instance Repr for TimeInterval
 

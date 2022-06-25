@@ -1,6 +1,6 @@
 
 
-namespace Marlowe.Semantics.Operate
+namespace Marlowe.Semantics
 
 
-end Marlowe.Semantics.Operate
+end Marlowe.Semantics

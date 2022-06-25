@@ -19,10 +19,14 @@ def Integer := Int
 
 deriving instance Ord, Repr for Integer
 
+def fromInteger (i : Integer) : Int := i
+
 
 def POSIXTime := Int
 
 deriving instance Ord, Repr for POSIXTime
+
+def fromPOSIXTime (i : POSIXTime) : Int := i
 
 
 end Marlowe.Primitives
