@@ -33,12 +33,25 @@ structure State :=
   minTime     : POSIXTime
 deriving Repr
 
+instance : BEq State where
+  beq x y := x.accounts.toList == y.accounts.toList
+               && x.choices.toList == y.choices.toList
+               && x.boundValues.toList == y.boundValues.toList
+               && x.minTime == y.minTime
+
+instance : Inhabited State where
+  default := {
+               accounts    := RBMap.empty
+             , choices     := RBMap.empty
+             , boundValues := RBMap.empty
+             , minTime     := default
+             }
 export State (accounts choices boundValues minTime)
 
 
 def TimeInterval := POSIXTime × POSIXTime
 
-deriving instance Repr for TimeInterval
+deriving instance BEq, Repr for TimeInterval
 
 
 structure Environment :=
@@ -46,6 +59,25 @@ structure Environment :=
 deriving Repr
 
 export Environment (timeInterval)
+
+
+def Money := RBMap TokenT Integer compare
+
+instance : BEq Money where
+  beq x y := x.toList == y.toList
+
+deriving instance Repr for Money
+
+
+def singletonMoney (t : TokenT) (n : Integer) : Money :=
+  RBMap.ofList [(t, n)]
+
+
+structure Payment :=
+  account : AccountId
+  payee   : Payee
+  money   : Money
+deriving BEq, Repr
 
 
 end Marlowe.Language.State

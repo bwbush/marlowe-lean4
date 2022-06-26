@@ -16,14 +16,14 @@ open Std.RBMap (findD insert)
 
 
 private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Integer): Accounts :=
-  let previous : Int := s.findD (a, t) (Int.ofNat 0)
+  let previous : Int := s.findD (a, t) default
   s.insert (a, t) (previous + fromInteger n)
 
 
-def act : Environment × State → InputContent → Environment × State
-  | (e, s), IDeposit a _ t n => (e, {s with accounts := deposit (accounts s) a t n})
-  | (e, s), IChoice c n      => (e, {s with choices := (choices s).insert c n})
-  | (e, s), INotify          => (e, s)
+def act (s : State) : InputContent → State
+  | IDeposit a _ t n => {s with accounts := deposit s.accounts a t n}
+  | IChoice c n      => {s with choices := s.choices.insert c n}
+  | INotify          => s
 
 
 end Marlowe.Semantics

@@ -33,33 +33,33 @@ def divide (num : Int) (den : Int) : Int :=
 
 mutual
 
-  def evaluate : Environment → State → Value → Int
-    | _, s, AvailableMoney a t => (accounts s).findD (a, t) (Int.ofNat 0)
-    | _, _, Constant x         => x
-    | e, s, NegValue x         => - evaluate e s x
-    | e, s, AddValue x y       => evaluate e s x + evaluate e s y
-    | e, s, SubValue x y       => evaluate e s x - evaluate e s y
-    | e, s, MulValue x y       => evaluate e s x * evaluate e s y
-    | e, s, DivValue x y       => divide (evaluate e s x) (evaluate e s y)
-    | e, s, Scale num den x    => divide (fromInteger num * evaluate e s x) den
-    | _, s, ChoiceValue c      => (choices s).findD c (Int.ofNat 0)
-    | e, _, TimeIntervalStart  => (timeInterval e).fst
-    | e, _, TimeIntervalEnd    => (timeInterval e).snd
-    | _, s, UseValue v         => (boundValues s).findD v (Int.ofNat 0)
-    | e, s, Cond o x y         => if observe e s o then evaluate e s x else evaluate e s y
+  def evaluate (e : Environment) (s : State) : Value → Int
+    | AvailableMoney a t => s.accounts.findD (a, t) default
+    | Constant x         => x
+    | NegValue x         => - evaluate e s x
+    | AddValue x y       => evaluate e s x + evaluate e s y
+    | SubValue x y       => evaluate e s x - evaluate e s y
+    | MulValue x y       => evaluate e s x * evaluate e s y
+    | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
+    | Scale num den x    => divide (fromInteger num * evaluate e s x) den
+    | ChoiceValue c      => s.choices.findD c default
+    | TimeIntervalStart  => e.timeInterval.fst
+    | TimeIntervalEnd    => e.timeInterval.snd
+    | UseValue v         => s.boundValues.findD v default
+    | Cond o x y         => if observe e s o then evaluate e s x else evaluate e s y
 
-  def observe : Environment → State → Observation → Bool
-    | e, s, (AndObs x y      ) => observe e s x && observe e s y
-    | e, s, (OrObs x y       ) => observe e s x || observe e s y
-    | e, s, (NotObs x        ) => ! observe e s x
-    | _, s, (ChoseSomething c) => (choices s).contains c
-    | e, s, (ValueGE x y     ) => evaluate e s x >= evaluate e s y
-    | e, s, (ValueGT x y     ) => evaluate e s x >  evaluate e s y
-    | e, s, (ValueLT x y     ) => evaluate e s x <  evaluate e s y
-    | e, s, (ValueLE x y     ) => evaluate e s x <= evaluate e s y
-    | e, s, (ValueEQ x y     ) => evaluate e s x == evaluate e s y
-    | _, _, TrueObs            => true
-    | _, _, FalseObs           => false
+  def observe (e : Environment) (s : State) : Observation → Bool
+    | AndObs x y       => observe e s x && observe e s y
+    | OrObs x y        => observe e s x || observe e s y
+    | NotObs x         => ! observe e s x
+    | ChoseSomething c => s.choices.contains c
+    | ValueGE x y      => evaluate e s x >= evaluate e s y
+    | ValueGT x y      => evaluate e s x >  evaluate e s y
+    | ValueLT x y      => evaluate e s x <  evaluate e s y
+    | ValueLE x y      => evaluate e s x <= evaluate e s y
+    | ValueEQ x y      => evaluate e s x == evaluate e s y
+    | TrueObs          => true
+    | FalseObs         => false
 
 end
 

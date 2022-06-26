@@ -8,6 +8,13 @@ def ByteString :=
     then String
     else ByteArray
 
+instance : BEq ByteString where
+  beq (x : String) (y : String) :=  x == y
+
+
+instance : Inhabited ByteString where
+  default := ""
+
 instance : Ord ByteString where
   compare (x : String) (y : String) := compare x y
 
@@ -17,14 +24,14 @@ instance : Repr ByteString where
 
 def Integer := Int
 
-deriving instance Ord, Repr for Integer
+deriving instance BEq, Inhabited, Ord, Repr for Integer
 
 def fromInteger (i : Integer) : Int := i
 
 
 def POSIXTime := Int
 
-deriving instance Ord, Repr for POSIXTime
+deriving instance BEq, Inhabited, Ord, Repr for POSIXTime
 
 def fromPOSIXTime (i : POSIXTime) : Int := i
 
