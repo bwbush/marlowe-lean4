@@ -8,7 +8,7 @@ namespace Marlowe.Language.Input
 
 
 open Marlowe.Language.Contract
-open Marlowe.Primitives
+open Marlowe.Primitives (ByteString Integer)
 
 
 def ChosenNum := Integer

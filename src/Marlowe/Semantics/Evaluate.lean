@@ -11,7 +11,6 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Marlowe.Primitives (fromInteger)
 open Std.RBMap (contains findD)
 
 
@@ -34,18 +33,18 @@ def divide (num : Int) (den : Int) : Int :=
 mutual
 
   def evaluate (e : Environment) (s : State) : Value → Int
-    | AvailableMoney a t => s.accounts.findD (a, t) default
-    | Constant x         => x
+    | AvailableMoney a t => (s.accounts.findD (a, t) default).toInt
+    | Constant x         => x.toInt
     | NegValue x         => - evaluate e s x
     | AddValue x y       => evaluate e s x + evaluate e s y
     | SubValue x y       => evaluate e s x - evaluate e s y
     | MulValue x y       => evaluate e s x * evaluate e s y
     | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
-    | Scale num den x    => divide (fromInteger num * evaluate e s x) den
-    | ChoiceValue c      => s.choices.findD c default
-    | TimeIntervalStart  => e.timeInterval.fst
-    | TimeIntervalEnd    => e.timeInterval.snd
-    | UseValue v         => s.boundValues.findD v default
+    | Scale num den x    => divide (num.toInt * evaluate e s x) den.toInt
+    | ChoiceValue c      => (s.choices.findD c default).toInt
+    | TimeIntervalStart  => e.timeInterval.fst.toInt
+    | TimeIntervalEnd    => e.timeInterval.snd.toInt
+    | UseValue v         => (s.boundValues.findD v default).toInt
     | Cond o x y         => if observe e s o then evaluate e s x else evaluate e s y
 
   def observe (e : Environment) (s : State) : Observation → Bool

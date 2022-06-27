@@ -12,11 +12,11 @@ namespace Marlowe.Examples
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Marlowe.Primitives
+open Marlowe.Primitives (Integer integer posixTime)
 open Marlowe.Semantics
 
 
-def trivial (party : PartyT) (deposit : Int) (withdrawal : Int) (timeout : Timeout): Contract :=
+def trivial (party : PartyT) (deposit : Integer) (withdrawal : Integer) (timeout : Timeout): Contract :=
   When
     [
       Case (Deposit party party Ada (Constant deposit))
@@ -40,10 +40,10 @@ def trivial (party : PartyT) (deposit : Int) (withdrawal : Int) (timeout : Timeo
 
 def runTrivial : Except String (List StepResult) :=
   let party := Role "Party"
-  let deposit : Integer := Int.ofNat 100
-  let withdrawal : Integer := Int.ofNat 60
-  let timeout : Timeout := Int.ofNat 1000
-  let e : Environment := {timeInterval := (Int.ofNat 1, Int.ofNat 10)}
+  let deposit : Integer := integer 100
+  let withdrawal : Integer := integer 60
+  let timeout : Timeout := posixTime 1000
+  let e : Environment := {timeInterval := (posixTime 1, posixTime 10)}
   let s0 := default
   let c0 := trivial party deposit withdrawal timeout
   let is := [
@@ -66,9 +66,9 @@ def checkTrivial : Bool :=
   let expected :=
     {
       (default : StepResult) with
-        newState    := {(default : State) with minTime := Int.ofNat 10}
+        newState    := {(default : State) with minTime := posixTime 10}
       , newContract := Close
-      , payments    := [{account := Role "Party", payee := Party $ Role "Party", money := singletonMoney Ada (Int.ofNat 40)}]
+      , payments    := [{account := Role "Party", payee := Party $ Role "Party", money := singletonMoney Ada $ integer 40}]
     }
   match actual with
   | Except.ok [_, _, _, _, actual'] => actual' == expected

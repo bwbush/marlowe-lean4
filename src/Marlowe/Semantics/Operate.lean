@@ -11,7 +11,7 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Marlowe.Primitives (fromPOSIXTime)
+open Marlowe.Primitives (integer)
 open Std (RBMap)
 
 
@@ -70,15 +70,12 @@ private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Act
                                                                                    guard $ account == account'
                                                                                    guard $ party == party'
                                                                                    guard $ token == token'
-                                                                                   guard $ amount == amount'
+                                                                                   guard $ amount.toInt == amount'
                                                                                    pure $ act s i
-  | IChoice choiceId choiceNum         , Choice choiceId' (Bound lower upper) => let choiceNum' : Int := choiceNum
-                                                                                 let lower'     : Int := lower
-                                                                                 let upper'     : Int := upper
-                                                                                 do
+  | IChoice choiceId choiceNum         , Choice choiceId' (Bound lower upper) => do
                                                                                    guard $ choiceId == choiceId'
-                                                                                   guard $ choiceNum' >= lower'
-                                                                                   guard $ choiceNum' <= upper'
+                                                                                   guard $ choiceNum.toInt >= lower.toInt
+                                                                                   guard $ choiceNum.toInt <= upper.toInt
                                                                                    pure $ act s i
   | INotify                            , Notify observation                   => do
                                                                                    guard $ observe e s observation
@@ -87,7 +84,7 @@ private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Act
 
 
 private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (cases : List CaseT) (t : Timeout) (c : Contract) : Except String StepResult :=
-  match (fromPOSIXTime t < e.timeInterval.fst : Bool), inputs with
+  match (t.toInt < e.timeInterval.fst.toInt : Bool), inputs with
   | true, _               => pure $ noInputsApplied e s inputs c -- FIXME: Check comparison.
   | _   , input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
                                prior <|> do
@@ -118,28 +115,28 @@ private def makePayments (accounts : Accounts) : List Payment :=
 
 private def makePayment (accounts : Accounts) (a : AccountId) (p : Payee) (t : TokenT) (payment : Int): Except String (Accounts × Payment) :=
   do
-    let available : Int := accounts.findD (a, t) default
+    let available : Int := (accounts.findD (a, t) default).toInt
     let remainder : Int := available - payment
     match (payment > 0 : Bool), (remainder > 0 : Bool) with
     | false, _     => throw "Attempt to withdraw non-positive amount."
     | _    , false => throw "Attempt to withdraw amount in excess of available funds."
     | true , true  => pure
                         (
-                          accounts.insert (a, t) remainder
-                        , {account := a, payee := p, money := singletonMoney t payment}
+                          accounts.insert (a, t) $ integer remainder
+                        , {account := a, payee := p, money := singletonMoney t $ integer payment}
                         )
 
 
 private def bindVariable (e : Environment) (s : State) (v : ValueIdT) (x : Value) : State :=
-  {s with boundValues := s.boundValues.insert v $ evaluate e s x}
+  {s with boundValues := s.boundValues.insert v $ integer $ evaluate e s x}
 
 
 private def ensureValidTime (e : Environment) (s : State) : Except String Unit :=
-  let start   : Int := e.timeInterval.fst
-  let finish  : Int := e.timeInterval.snd
-  let minimum : Int := s.minTime
+  let start   := e.timeInterval.fst
+  let finish  := e.timeInterval.snd
+  let minimum := s.minTime
   -- TODO: Check these constraints.
-  match (start < finish : Bool), (minimum <= finish : Bool) with
+  match (start.toInt < finish.toInt : Bool), (minimum.toInt <= finish.toInt : Bool) with
   | false, _     => throw "Start of validity interval must preceed its finish."
   | _    , false => throw "Finish of validity interval preceeds minimum time."
   | true , true  => pure ()

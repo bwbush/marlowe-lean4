@@ -11,7 +11,6 @@ def ByteString :=
 instance : BEq ByteString where
   beq (x : String) (y : String) :=  x == y
 
-
 instance : Inhabited ByteString where
   default := ""
 
@@ -22,18 +21,22 @@ instance : Repr ByteString where
   reprPrec s _ := s.quote
 
 
-def Integer := Int
+structure Integer :=
+  toInt : Int
+deriving BEq, Inhabited, Ord, Repr
 
-deriving instance BEq, Inhabited, Ord, Repr for Integer
+-- FIXME: Implement comparison operators.
 
-def fromInteger (i : Integer) : Int := i
+def integer (i : Int) : Integer := {toInt := i}
 
 
-def POSIXTime := Int
+structure POSIXTime :=
+  toInt : Int
+deriving BEq, Inhabited, Ord, Repr
 
-deriving instance BEq, Inhabited, Ord, Repr for POSIXTime
+-- FIXME: Implement comparison operators.
 
-def fromPOSIXTime (i : POSIXTime) : Int := i
+def posixTime (i : Int) : POSIXTime := {toInt := i}
 
 
 end Marlowe.Primitives

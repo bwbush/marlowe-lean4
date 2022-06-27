@@ -11,7 +11,7 @@ namespace Marlowe.Language.State
 
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
-open Marlowe.Primitives
+open Marlowe.Primitives (Integer POSIXTime)
 open Std (RBMap)
 
 

@@ -11,13 +11,13 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Marlowe.Primitives (Integer fromInteger)
+open Marlowe.Primitives (Integer)
 open Std.RBMap (findD insert)
 
 
 private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Integer): Accounts :=
-  let previous : Int := s.findD (a, t) default
-  s.insert (a, t) (previous + fromInteger n)
+  let previous := s.findD (a, t) default
+  s.insert (a, t) {toInt := previous.toInt + n.toInt}
 
 
 def act (s : State) : InputContent → State

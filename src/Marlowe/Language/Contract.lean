@@ -6,7 +6,7 @@ import Marlowe.Primitives
 namespace Marlowe.Language.Contract
 
 
-open Marlowe.Primitives
+open Marlowe.Primitives (ByteString Integer POSIXTime)
 
 
 def Timeout := POSIXTime
