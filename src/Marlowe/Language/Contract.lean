@@ -25,8 +25,8 @@ deriving instance BEq, Inhabited, Ord, Repr for TokenName
 
 
 inductive TokenT where
-| Ada   : TokenT
-| Token : CurrencySymbol → TokenName → TokenT
+  | Ada   : TokenT
+  | Token : CurrencySymbol → TokenName → TokenT
 deriving BEq, Ord, Repr
 
 instance : Inhabited TokenT where
@@ -36,8 +36,8 @@ export TokenT (Ada Token)
 
 
 inductive PartyT where
-| PubKey : ByteString → PartyT
-| Role   : TokenName  → PartyT
+  | PubKey : ByteString → PartyT
+  | Role   : TokenName  → PartyT
 deriving BEq, Ord, Repr
 
 export PartyT (PubKey Role)
@@ -49,29 +49,29 @@ deriving instance BEq, Ord, Repr for AccountId
 
 
 inductive Payee where
-| Account : AccountId → Payee
-| Party   : PartyT → Payee
+  | Account : AccountId → Payee
+  | Party   : PartyT → Payee
 deriving BEq, Repr
 
 export Payee (Account Party)
 
 
 inductive BoundT where
-| Bound : Integer → Integer → BoundT
+  | Bound : Integer → Integer → BoundT
 deriving BEq, Repr
 
 export BoundT (Bound)
 
 
 inductive ChoiceIdT where
-| ChoiceId : ByteString → PartyT → ChoiceIdT
+  | ChoiceId : ByteString → PartyT → ChoiceIdT
 deriving BEq, Ord, Repr
 
 export ChoiceIdT (ChoiceId)
 
 
 inductive ValueIdT where
-| ValueId : ByteString → ValueIdT
+  | ValueId : ByteString → ValueIdT
 deriving BEq, Ord, Repr
 
 export ValueIdT (ValueId)
@@ -80,33 +80,33 @@ export ValueIdT (ValueId)
 mutual
 
   inductive Value where
-  | AvailableMoney    : AccountId → TokenT → Value
-  | Constant          : Integer → Value
-  | NegValue          : Value → Value
-  | AddValue          : Value → Value → Value
-  | SubValue          : Value → Value → Value
-  | MulValue          : Value → Value → Value
-  | DivValue          : Value → Value → Value
-  | Scale             : Integer → Integer → Value → Value
-  | ChoiceValue       : ChoiceIdT → Value
-  | TimeIntervalStart : Value
-  | TimeIntervalEnd   : Value
-  | UseValue          : ValueIdT → Value
-  | Cond              : Observation → Value → Value → Value
+    | AvailableMoney    : AccountId → TokenT → Value
+    | Constant          : Integer → Value
+    | NegValue          : Value → Value
+    | AddValue          : Value → Value → Value
+    | SubValue          : Value → Value → Value
+    | MulValue          : Value → Value → Value
+    | DivValue          : Value → Value → Value
+    | Scale             : Integer → Integer → Value → Value
+    | ChoiceValue       : ChoiceIdT → Value
+    | TimeIntervalStart : Value
+    | TimeIntervalEnd   : Value
+    | UseValue          : ValueIdT → Value
+    | Cond              : Observation → Value → Value → Value
   deriving BEq, Repr
 
   inductive Observation where
-  | AndObs         : Observation → Observation → Observation
-  | OrObs          : Observation → Observation → Observation
-  | NotObs         : Observation → Observation
-  | ChoseSomething : ChoiceIdT → Observation
-  | ValueGE        : Value → Value → Observation
-  | ValueGT        : Value → Value → Observation
-  | ValueLT        : Value → Value → Observation
-  | ValueLE        : Value → Value → Observation
-  | ValueEQ        : Value → Value → Observation
-  | TrueObs        : Observation
-  | FalseObs       : Observation
+    | AndObs         : Observation → Observation → Observation
+    | OrObs          : Observation → Observation → Observation
+    | NotObs         : Observation → Observation
+    | ChoseSomething : ChoiceIdT → Observation
+    | ValueGE        : Value → Value → Observation
+    | ValueGT        : Value → Value → Observation
+    | ValueLT        : Value → Value → Observation
+    | ValueLE        : Value → Value → Observation
+    | ValueEQ        : Value → Value → Observation
+    | TrueObs        : Observation
+    | FalseObs       : Observation
   deriving BEq, Repr
 
 end
@@ -117,9 +117,9 @@ export Observation (AndObs OrObs NotObs ChoseSomething ValueGE ValueGT ValueLT V
 
 
 inductive Action where
-| Deposit : AccountId → PartyT → TokenT → Value → Action
-| Choice  : ChoiceIdT → BoundT → Action
-| Notify  : Observation → Action
+  | Deposit : AccountId → PartyT → TokenT → Value → Action
+  | Choice  : ChoiceIdT → BoundT → Action
+  | Notify  : Observation → Action
  deriving BEq, Repr
 
  export Action (Deposit Choice Notify)
@@ -128,17 +128,17 @@ inductive Action where
 mutual
 
   inductive CaseT where
-  | Case           : Action → Contract → CaseT
-  | MerkleizedCase : Action → ByteString → CaseT
+    | Case           : Action → Contract → CaseT
+    | MerkleizedCase : Action → ByteString → CaseT
   deriving BEq, Repr
 
   inductive Contract where
-  | Close  : Contract
-  | Pay    : AccountId → Payee → TokenT → Value → Contract → Contract
-  | If     : Observation → Contract → Contract → Contract
-  | When   : List CaseT → Timeout → Contract → Contract
-  | Let    : ValueIdT → Value → Contract → Contract
-  | Assert : Observation → Contract → Contract
+    | Close  : Contract
+    | Pay    : AccountId → Payee → TokenT → Value → Contract → Contract
+    | If     : Observation → Contract → Contract → Contract
+    | When   : List CaseT → Timeout → Contract → Contract
+    | Let    : ValueIdT → Value → Contract → Contract
+    | Assert : Observation → Contract → Contract
   deriving BEq, Repr
     
 end

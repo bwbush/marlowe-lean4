@@ -164,4 +164,15 @@ def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Exc
                             else pure {(noInputsApplied e s is c) with warnings := ["Assertion failed."]}
 
 
+def execute (e : Environment) (s : State) (is : List Input) (c: Contract) : Nat -> Except String (List StepResult)
+  | 0 => pure []
+  | n + 1 => do
+               let result <- operate e s is c
+               if result.newContract == Close && result.newState.accounts.toList == []
+                 then pure [result]
+                 else do
+                        let remainder <- execute e result.newState result.inputsRemaining result.newContract n
+                        pure $ result :: remainder
+
+
 end Marlowe.Semantics

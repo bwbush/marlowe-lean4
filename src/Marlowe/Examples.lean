@@ -61,6 +61,25 @@ def runTrivial : Except String (List StepResult) :=
 
 #eval runTrivial
 
+
+def executeTrivial : Except String (List StepResult) :=
+  let party := Role "Party"
+  let deposit : Integer := integer 100
+  let withdrawal : Integer := integer 60
+  let timeout : Timeout := posixTime 1000
+  let e : Environment := {timeInterval := (posixTime 1, posixTime 10)}
+  let s0 := default
+  let c0 := trivial party deposit withdrawal timeout
+  let is := [
+              NormalInput $ IDeposit party party Ada deposit
+            , NormalInput INotify
+            , NormalInput INotify
+            ]
+  execute e s0 is c0 5
+
+#eval executeTrivial
+
+
 def checkTrivial : Bool :=
   let actual := runTrivial
   let expected :=
