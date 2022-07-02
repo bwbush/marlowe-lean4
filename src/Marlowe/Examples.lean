@@ -38,7 +38,7 @@ def trivial (party : PartyT) (deposit : Integer) (withdrawal : Integer) (timeout
     timeout
     Close
 
-def runTrivial : Except String (List StepResult) :=
+def runTrivial : Except String (List OperationResult) :=
   let party := Role "Party"
   let deposit : Integer := integer 100
   let withdrawal : Integer := integer 60
@@ -62,7 +62,7 @@ def runTrivial : Except String (List StepResult) :=
 #eval runTrivial
 
 
-def executeTrivial : Except String (List StepResult) :=
+def executeTrivial : Except String (List OperationResult) :=
   let party := Role "Party"
   let deposit : Integer := integer 100
   let withdrawal : Integer := integer 60
@@ -75,7 +75,7 @@ def executeTrivial : Except String (List StepResult) :=
             , NormalInput INotify
             , NormalInput INotify
             ]
-  execute e s0 is c0 5
+  execute e s0 is c0 9
 
 #eval executeTrivial
 
@@ -84,7 +84,7 @@ def checkTrivial : Bool :=
   let actual := runTrivial
   let expected :=
     {
-      (default : StepResult) with
+      (default : OperationResult) with
         newState    := {(default : State) with minTime := posixTime 10}
       , newContract := Close
       , payments    := [{account := Role "Party", payee := Party $ Role "Party", money := singletonMoney Ada $ integer 40}]

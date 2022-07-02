@@ -15,7 +15,7 @@ open Marlowe.Primitives (integer)
 open Std (RBMap)
 
 
-structure StepResult :=
+structure OperationResult :=
   newState          : State
   newContract       : Contract
   inputsApplied     : List Input
@@ -24,7 +24,7 @@ structure StepResult :=
   inputsRemaining   : List Input
 deriving BEq, Repr
 
-instance : Inhabited StepResult where
+instance : Inhabited OperationResult where
   default := {
                newState        := default
              , newContract     := default
@@ -34,13 +34,13 @@ instance : Inhabited StepResult where
              , inputsRemaining := []
              }
 
-export StepResult (newState newContract inputsApplied payments warnings inputsRemaining)
+export OperationResult (newState newContract inputsApplied payments warnings inputsRemaining)
 
 
-private def noInputsApplied (e : Environment) (s : State) (is : List Input) (c : Contract): StepResult :=
+private def noInputsApplied (e : Environment) (s : State) (is : List Input) (c : Contract): OperationResult :=
   {
-    (default : StepResult) with
-      newState        := {s with minTime := e.timeInterval.snd}  -- TODO: Check how minimum time should be updated.
+    (default : OperationResult) with
+      newState        := {s with minTime := e.timeInterval.snd}
     , inputsRemaining := is
     , newContract     := c
   }
@@ -86,27 +86,30 @@ private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Act
   | _                                  , _                                    => none
 
 
-private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (cases : List CaseT) (t : Timeout) (c : Contract) : Except String StepResult :=
-  match (t.toInt < e.timeInterval.fst.toInt : Bool), inputs with
-  | true, _               => pure $ noInputsApplied e s inputs c -- FIXME: Check comparison.
-  | _   , input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
-                               prior <|> do
-                                 let (content, action, continuation) <- demerkleize input case
-                                 let s' <- applyInput e s content action
-                                 pure (s', continuation)
-                             let result := cases.foldl merge none
-                             match result with
-                             | some (s', c') => pure
-                                                  {
-                                                    newState        := s'
-                                                  , newContract     := c'
-                                                  , payments        := []
-                                                  , warnings        := []
-                                                  , inputsApplied   := [input]
-                                                  , inputsRemaining := inputs'
-                                                  }
-                             | none          => throw "No case matching input."
-  | _   , _               => throw "No input."
+private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (cases : List CaseT) (t : Timeout) (c : Contract) : Except String OperationResult :=
+  let startBeforeTimeout : Bool := e.timeInterval.fst.toInt < t.toInt
+  let finishBeforeTimeout : Bool := e.timeInterval.snd.toInt < t.toInt
+  match startBeforeTimeout, finishBeforeTimeout, inputs with
+  | false, _    , _               => pure $ noInputsApplied e s inputs c
+  | true , false, _               => throw "Ambiguous time interval."
+  | _    , _    , input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
+                                       prior <|> do
+                                         let (content, action, continuation) <- demerkleize input case
+                                         let s' <- applyInput e s content action
+                                         pure (s', continuation)
+                                     let result := cases.foldl merge none
+                                     match result with
+                                     | some (s', c') => pure
+                                                          {
+                                                            newState        := s'
+                                                          , newContract     := c'
+                                                          , payments        := []
+                                                          , warnings        := []
+                                                          , inputsApplied   := [input]
+                                                          , inputsRemaining := inputs'
+                                                          }
+                                     | none          => throw "No case matching input."
+  | _   , _     , []              => throw "No input."
 
 
 private def makePayments (accounts : Accounts) : List Payment :=
@@ -138,14 +141,13 @@ private def ensureValidTime (e : Environment) (s : State) : Except String Unit :
   let start   := e.timeInterval.fst
   let finish  := e.timeInterval.snd
   let minimum := s.minTime
-  -- TODO: Check these constraints.
-  match (start.toInt < finish.toInt : Bool), (minimum.toInt <= finish.toInt : Bool) with
-  | false, _     => throw "Start of validity interval must preceed its finish."
+  match (start.toInt <= finish.toInt : Bool), (minimum.toInt <= finish.toInt : Bool) with
+  | false, _     => throw "Start of validity interval follows its finish."
   | _    , false => throw "Finish of validity interval preceeds minimum time."
   | true , true  => pure ()
 
 
-def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Except String StepResult :=
+def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Except String OperationResult :=
   do
     ensureValidTime e s
     match c with
@@ -167,7 +169,7 @@ def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Exc
                             else pure {(noInputsApplied e s is c) with warnings := ["Assertion failed."]}
 
 
-def execute (e : Environment) (s : State) (is : List Input) (c: Contract) : Nat -> Except String (List StepResult)
+def execute (e : Environment) (s : State) (is : List Input) (c: Contract) : Nat -> Except String (List OperationResult)
   | 0 => pure []
   | n + 1 => do
                let result <- operate e s is c
