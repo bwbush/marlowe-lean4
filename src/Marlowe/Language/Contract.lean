@@ -118,7 +118,7 @@ export Observation (AndObs OrObs NotObs ChoseSomething ValueGE ValueGT ValueLT V
 
 inductive Action where
   | Deposit : AccountId → PartyT → TokenT → Value → Action
-  | Choice  : ChoiceIdT → BoundT → Action
+  | Choice  : ChoiceIdT → List BoundT → Action
   | Notify  : Observation → Action
  deriving BEq, Repr
 

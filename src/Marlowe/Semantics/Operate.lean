@@ -72,10 +72,13 @@ private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Act
                                                                                    guard $ token == token'
                                                                                    guard $ amount.toInt == amount'
                                                                                    pure $ act s i
-  | IChoice choiceId choiceNum         , Choice choiceId' (Bound lower upper) => do
+  | IChoice choiceId choiceNum         , Choice choiceId' bounds              => do
                                                                                    guard $ choiceId == choiceId'
-                                                                                   guard $ choiceNum.toInt >= lower.toInt
-                                                                                   guard $ choiceNum.toInt <= upper.toInt
+                                                                                   let inBound : BoundT → Bool
+                                                                                     | Bound lower upper =>
+                                                                                         choiceNum.toInt >= lower.toInt
+                                                                                           && choiceNum.toInt <= upper.toInt
+                                                                                   guard $ bounds.all inBound
                                                                                    pure $ act s i
   | INotify                            , Notify observation                   => do
                                                                                    guard $ observe e s observation
