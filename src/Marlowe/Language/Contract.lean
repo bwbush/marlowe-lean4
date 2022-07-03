@@ -140,7 +140,7 @@ mutual
     | Let    : ValueIdT → Value → Contract → Contract
     | Assert : Observation → Contract → Contract
   deriving BEq, Repr
-    
+
 end
 
   instance : Inhabited Contract where

@@ -65,51 +65,54 @@ private def demerkleize' : Input → CaseT → Except String (InputContent × Ac
 
 private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Action) : Option State :=
   match i, a with
-  | IDeposit account party token amount, Deposit account' party' token' value => let amount' := evaluate e s value
-                                                                                 do
-                                                                                   guard $ account == account'
-                                                                                   guard $ party == party'
-                                                                                   guard $ token == token'
-                                                                                   guard $ amount.toInt == amount'
-                                                                                   pure $ act s i
-  | IChoice choiceId choiceNum         , Choice choiceId' bounds              => do
-                                                                                   guard $ choiceId == choiceId'
-                                                                                   let inBound : BoundT → Bool
-                                                                                     | Bound lower upper =>
-                                                                                         choiceNum.toInt >= lower.toInt
-                                                                                           && choiceNum.toInt <= upper.toInt
-                                                                                   guard $ bounds.all inBound
-                                                                                   pure $ act s i
-  | INotify                            , Notify observation                   => do
-                                                                                   guard $ observe e s observation
-                                                                                   pure $ act s i
-  | _                                  , _                                    => none
+    | IDeposit account party token amount, Deposit account' party' token' value => let amount' := evaluate e s value
+                                                                                   do
+                                                                                     guard $ account == account'
+                                                                                     guard $ party == party'
+                                                                                     guard $ token == token'
+                                                                                     guard $ amount.toInt == amount'
+                                                                                     pure $ act s i
+    | IChoice choiceId choiceNum         , Choice choiceId' bounds              => do
+                                                                                     guard $ choiceId == choiceId'
+                                                                                     let inBound : BoundT → Bool
+                                                                                       | Bound lower upper =>
+                                                                                           choiceNum.toInt >= lower.toInt
+                                                                                             && choiceNum.toInt <= upper.toInt
+                                                                                     guard $ bounds.all inBound
+                                                                                     pure $ act s i
+    | INotify                            , Notify observation                   => do
+                                                                                     guard $ observe e s observation
+                                                                                     pure $ act s i
+    | _                                  , _                                    => none
 
 
 private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (cases : List CaseT) (t : Timeout) (c : Contract) : Except String OperationResult :=
   let startBeforeTimeout : Bool := e.timeInterval.fst.toInt < t.toInt
   let finishBeforeTimeout : Bool := e.timeInterval.snd.toInt < t.toInt
-  match startBeforeTimeout, finishBeforeTimeout, inputs with
-  | false, _    , _               => pure $ noInputsApplied e s inputs c
-  | true , false, _               => throw "Ambiguous time interval."
-  | _    , _    , input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
-                                       prior <|> do
-                                         let (content, action, continuation) <- demerkleize input case
-                                         let s' <- applyInput e s content action
-                                         pure (s', continuation)
-                                     let result := cases.foldl merge none
-                                     match result with
-                                     | some (s', c') => pure
-                                                          {
-                                                            newState        := s'
-                                                          , newContract     := c'
-                                                          , payments        := []
-                                                          , warnings        := []
-                                                          , inputsApplied   := [input]
-                                                          , inputsRemaining := inputs'
-                                                          }
-                                     | none          => throw "No case matching input."
-  | _   , _     , []              => throw "No input."
+  if startBeforeTimeout
+    then do
+           unless finishBeforeTimeout
+             do throw "Ambiguous time interval."
+           match inputs with
+             | input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
+                                    prior <|> do
+                                      let (content, action, continuation) <- demerkleize input case
+                                      let s' <- applyInput e s content action
+                                      pure (s', continuation)
+                                  let result := cases.foldl merge none
+                                  match result with
+                                    | some (s', c') => pure
+                                                         {
+                                                           newState        := s'
+                                                         , newContract     := c'
+                                                         , payments        := []
+                                                         , warnings        := []
+                                                         , inputsApplied   := [input]
+                                                         , inputsRemaining := inputs'
+                                                         }
+                                    | none          => throw "No case matching input."
+             | []              => throw "No input."
+    else pure $ noInputsApplied e s inputs c
 
 
 private def makePayments (accounts : Accounts) : List Payment :=
@@ -123,14 +126,15 @@ private def makePayment (accounts : Accounts) (a : AccountId) (p : Payee) (t : T
   do
     let available : Int := (accounts.findD (a, t) default).toInt
     let remainder : Int := available - payment
-    match (payment > 0 : Bool), (remainder > 0 : Bool) with
-    | false, _     => throw "Attempt to withdraw non-positive amount."
-    | _    , false => throw "Attempt to withdraw amount in excess of available funds."
-    | true , true  => pure
-                        (
-                          accounts.insert (a, t) $ integer remainder
-                        , {account := a, payee := p, money := singletonMoney t $ integer payment}
-                        )
+    unless (payment > 0)
+      do throw "Attempt to withdraw non-positive amount."
+    unless (remainder > 0)
+      do throw "Attempt to withdraw amount in excess of available funds."
+    pure
+      (
+        accounts.insert (a, t) $ integer remainder
+      , {account := a, payee := p, money := singletonMoney t $ integer payment}
+      )
 
 
 private def bindVariable (e : Environment) (s : State) (v : ValueIdT) (x : Value) : State :=
@@ -138,35 +142,36 @@ private def bindVariable (e : Environment) (s : State) (v : ValueIdT) (x : Value
 
 
 private def ensureValidTime (e : Environment) (s : State) : Except String Unit :=
-  let start   := e.timeInterval.fst
-  let finish  := e.timeInterval.snd
-  let minimum := s.minTime
-  match (start.toInt <= finish.toInt : Bool), (minimum.toInt <= finish.toInt : Bool) with
-  | false, _     => throw "Start of validity interval follows its finish."
-  | _    , false => throw "Finish of validity interval preceeds minimum time."
-  | true , true  => pure ()
+  do
+    let start   := e.timeInterval.fst
+    let finish  := e.timeInterval.snd
+    let minimum := s.minTime
+    unless (start.toInt <= finish.toInt)
+      do throw "Start of validity interval follows its finish."
+    unless (minimum.toInt <= finish.toInt)
+      do throw "Finish of validity interval preceeds minimum time."
 
 
 def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Except String OperationResult :=
   do
     ensureValidTime e s
     match c with
-    | Close            => pure
-                            $ {noInputsApplied e {s with accounts := RBMap.empty} is default with payments := makePayments (accounts s)}
-    | Pay a p t x c    => do
-                            let x' := evaluate e s x
-                            let (accounts', y) <- makePayment (accounts s) a p t x'
-                            pure
-                              $ {noInputsApplied e {s with accounts := accounts'} is c with payments := [y]}
-    | If o cThen cElse => pure
-                            $ noInputsApplied e s is 
-                            $ if observe e s o then cThen else cElse
-    | When cs t c      => inputsApplied e s is cs t c
-    | Let v x c        => pure
-                            $ noInputsApplied e (bindVariable e s v x) is c
-    | Assert o c       => if observe e s o
-                            then pure $ noInputsApplied e s is c
-                            else pure {(noInputsApplied e s is c) with warnings := ["Assertion failed."]}
+      | Close            => pure
+                              $ {noInputsApplied e {s with accounts := RBMap.empty} is default with payments := makePayments (accounts s)}
+      | Pay a p t x c    => do
+                              let x' := evaluate e s x
+                              let (accounts', y) <- makePayment (accounts s) a p t x'
+                              pure
+                                $ {noInputsApplied e {s with accounts := accounts'} is c with payments := [y]}
+      | If o cThen cElse => pure
+                              $ noInputsApplied e s is
+                              $ if observe e s o then cThen else cElse
+      | When cs t c      => inputsApplied e s is cs t c
+      | Let v x c        => pure
+                              $ noInputsApplied e (bindVariable e s v x) is c
+      | Assert o c       => if observe e s o
+                              then pure $ noInputsApplied e s is c
+                              else pure {(noInputsApplied e s is c) with warnings := ["Assertion failed."]}
 
 
 def execute (e : Environment) (s : State) (is : List Input) (c: Contract) : Nat -> Except String (List OperationResult)

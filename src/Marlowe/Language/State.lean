@@ -17,8 +17,8 @@ open Std (RBMap)
 
 private def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ordering
   | (a0, t0), (a1, t1) => match compare a0 a1 with
-                          | Ordering.eq => compare t0 t1
-                          | cmp         => cmp
+                            | Ordering.eq => compare t0 t1
+                            | cmp         => cmp
 
 
 def Accounts := RBMap (AccountId × TokenT) Integer compareAT
@@ -26,7 +26,7 @@ def Accounts := RBMap (AccountId × TokenT) Integer compareAT
 deriving instance Repr for Accounts
 
 
-structure State := 
+structure State :=
   accounts    : Accounts
   choices     : RBMap ChoiceIdT ChosenNum compare
   boundValues : RBMap ValueIdT Integer compare

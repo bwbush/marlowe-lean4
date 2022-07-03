@@ -24,10 +24,10 @@ def divide (num : Int) (den : Int) : Int :=
       let rat := num' / den'
       let rem := num' % den'
       match compare (2 * rem) den', rat % 2 == 0 with
-      | Ordering.lt, _     => sig * rat
-      | Ordering.gt, _     => sig * (rat + 1)
-      | _          , true  => sig * rat
-      | _          , false => sig * (rat + 1)
+        | Ordering.lt, _     => sig * rat
+        | Ordering.gt, _     => sig * (rat + 1)
+        | _          , true  => sig * rat
+        | _          , false => sig * (rat + 1)
 
 
 mutual

@@ -90,8 +90,8 @@ def checkTrivial : Bool :=
       , payments    := [{account := Role "Party", payee := Party $ Role "Party", money := singletonMoney Ada $ integer 40}]
     }
   match actual with
-  | Except.ok [_, _, _, _, actual'] => actual' == expected
-  | _                               => false
+    | Except.ok [_, _, _, _, actual'] => actual' == expected
+    | _                               => false
 
 #eval checkTrivial
 

@@ -46,8 +46,8 @@ example : divide ( -9)   1  = -9 := rfl
 
 theorem divide_by_one (x : Int) : divide x 1 = x :=
   match x with
-  | 0 => by rfl
-  | _ => sorry
+    | 0 => by rfl
+    | _ => sorry
 
 
 end Marlowe.Proof
