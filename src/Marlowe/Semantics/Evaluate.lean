@@ -14,7 +14,7 @@ open Marlowe.Language.State
 open Std.RBMap (contains findD)
 
 
-def divide (num : Int) (den : Int) : Int :=
+private def divide (num : Int) (den : Int) : Int :=
   if num == 0 || den == 0
     then 0
     else
@@ -40,7 +40,7 @@ mutual
     | SubValue x y       => evaluate e s x - evaluate e s y
     | MulValue x y       => evaluate e s x * evaluate e s y
     | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
-    | Scale num den x    => divide (num.toInt * evaluate e s x) den.toInt
+    | Scale num den x    => divide (evaluate e s x * num.toInt) den.toInt
     | ChoiceValue c      => (s.choices.findD c default).toInt
     | TimeIntervalStart  => e.timeInterval.fst.toInt
     | TimeIntervalEnd    => e.timeInterval.snd.toInt
