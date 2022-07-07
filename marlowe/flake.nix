@@ -1,5 +1,5 @@
 {
-  description = "Marlowe in Lean4";
+  description = "Marlowe Implementation in Lean4";
 
   inputs.lean.url = github:leanprover/lean4;
   inputs.flake-utils.url = github:numtide/flake-utils;
@@ -8,7 +8,7 @@
     let
       leanPkgs = lean.packages.${system};
       pkg = leanPkgs.buildLeanPackage {
-        name = "Marlowe";  # must match the name of the top-level .lean file
+        name = "Marlowe";
         src = ./src;
       };
     in {
