@@ -1,23 +1,36 @@
 
 
 import M.Marlowe.Language.Contract
-import M.Marlowe.Primitives
+import M.PlutusCore
 
 
 namespace Marlowe.Language.Input
 
 
 open Marlowe.Language.Contract
-open Marlowe.Primitives (ByteString Integer)
+open PlutusCore (ByteString)
 
 
-def ChosenNum := Integer
+def ChosenNum := Int
 
-deriving instance BEq, Inhabited, Repr for ChosenNum
+def ChosenNum.toInt : ChosenNum → Int :=
+  fun (x : Int) => x
+
+deriving instance BEq, Inhabited, LE, LT, Ord, Repr for ChosenNum
+
+def ChosenNum.decLt (x y : ChosenNum) : Decidable (x < y) :=
+  inferInstanceAs (Decidable (x.toInt < y.toInt))
+
+instance (x y : ChosenNum) : Decidable (x < y) := ChosenNum.decLt x y
+
+def ChosenNum.decLe (x y : ChosenNum) : Decidable (x <= y) :=
+  inferInstanceAs (Decidable (x.toInt <= y.toInt))
+
+instance (x y : ChosenNum) : Decidable (x <= y) := ChosenNum.decLe x y
 
 
 inductive InputContent where
-  | IDeposit : AccountId → PartyT → TokenT → Integer → InputContent
+  | IDeposit : AccountId → PartyT → TokenT → Int → InputContent
   | IChoice : ChoiceIdT → ChosenNum → InputContent
   | INotify : InputContent
 deriving BEq, Repr

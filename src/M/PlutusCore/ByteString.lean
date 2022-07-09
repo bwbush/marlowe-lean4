@@ -3,6 +3,27 @@
 namespace PlutusCore
 
 
+structure ByteString where
+  bytes : ByteArray
+deriving Inhabited
+
+
+instance : BEq ByteString where
+  beq x y := x.bytes.toList == y.bytes.toList
+
+
+private def compareList [Ord a] : List a → List a → Ordering
+  | []     , []      => Ordering.eq
+  | []     , _       => Ordering.lt
+  | _      , []      => Ordering.gt
+  | x :: xs, y :: ys => match compare x y with
+                          | Ordering.eq => compareList xs ys
+                          | o           => o 
+
+instance : Ord ByteString where
+  compare x y := compareList x.bytes.toList y.bytes.toList
+
+
 private def toHexDigit : UInt8 → Char
   |  0 => '0'
   |  1 => '1'
@@ -31,13 +52,9 @@ private def toHexString (x : ByteArray) : String :=
   let f (bs : String) (b : UInt8) : String := bs ++ toHexByte b
   x.foldl f default 
 
-
-structure ByteString where
-  bytes : ByteArray
-deriving Inhabited
-
 instance : ToString ByteString where
   toString x := toHexString x.bytes
+
 
 instance : Repr ByteString where
   reprPrec x _ := toString x
@@ -47,6 +64,9 @@ namespace ByteString
 
   def fromList : List UInt8 → ByteString :=
     mk ∘ ByteArray.mk ∘ Array.mk
+
+  def fromString : String → ByteString :=
+    mk ∘ String.toUTF8
 
 end ByteString
 

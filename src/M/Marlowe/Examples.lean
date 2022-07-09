@@ -1,9 +1,9 @@
 
 
-import M.Marlowe.Language.Contract
-import M.Marlowe.Language.State
-import M.Marlowe.Primitives
+import M.Marlowe.Language
 import M.Marlowe.Semantics
+import M.Plutus
+import M.PlutusCore
 
 
 namespace Marlowe.Examples
@@ -12,11 +12,12 @@ namespace Marlowe.Examples
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Marlowe.Primitives (Integer integer posixTime)
 open Marlowe.Semantics
+open Plutus.V1.Ledger.Time (POSIXTime)
+open PlutusCore (ByteString)
 
 
-def trivial (party : PartyT) (deposit : Integer) (withdrawal : Integer) (timeout : Timeout): Contract :=
+def trivial (party : PartyT) (deposit : Int) (withdrawal : Int) (timeout : Timeout): Contract :=
   When
     [
       Case (Deposit party party Ada (Constant deposit))
@@ -38,12 +39,14 @@ def trivial (party : PartyT) (deposit : Integer) (withdrawal : Integer) (timeout
     timeout
     Close
 
+private def theParty := Role $ ByteString.fromString "Party"
+
 def runTrivial : Except String (List OperationResult) :=
-  let party := Role "Party"
-  let deposit : Integer := integer 100
-  let withdrawal : Integer := integer 60
-  let timeout : Timeout := posixTime 1000
-  let e : Environment := {timeInterval := (posixTime 1, posixTime 10)}
+  let party := theParty
+  let deposit : Int := 100
+  let withdrawal : Int := 60
+  let timeout : Timeout := POSIXTime.mk 1000
+  let e : Environment := {timeInterval := (POSIXTime.mk 1, POSIXTime.mk 10)}
   let s0 := default
   let c0 := trivial party deposit withdrawal timeout
   let is := [
@@ -63,11 +66,11 @@ def runTrivial : Except String (List OperationResult) :=
 
 
 def executeTrivial : Except String (List OperationResult) :=
-  let party := Role "Party"
-  let deposit : Integer := integer 100
-  let withdrawal : Integer := integer 60
-  let timeout : Timeout := posixTime 1000
-  let e : Environment := {timeInterval := (posixTime 1, posixTime 10)}
+  let party := theParty
+  let deposit : Int := 100
+  let withdrawal : Int := 60
+  let timeout : Timeout := POSIXTime.mk 1000
+  let e : Environment := {timeInterval := (POSIXTime.mk 1, POSIXTime.mk 10)}
   let s0 := default
   let c0 := trivial party deposit withdrawal timeout
   let is := [
@@ -85,9 +88,9 @@ def checkTrivial : Bool :=
   let expected :=
     {
       (default : OperationResult) with
-        newState    := {(default : State) with minTime := posixTime 10}
+        newState    := {(default : State) with minTime := POSIXTime.mk 10}
       , newContract := Close
-      , payments    := [{account := Role "Party", payee := Party $ Role "Party", money := singletonMoney Ada $ integer 40}]
+      , payments    := [{account := theParty, payee := Party $ theParty, money := singletonMoney Ada 40}]
     }
   match actual with
     | Except.ok [_, _, _, _, actual'] => actual' == expected

@@ -1,7 +1,6 @@
 
 
 import M.Marlowe.Language
-import M.Marlowe.Primitives
 import Std
 
 
@@ -33,18 +32,18 @@ private def divide (num : Int) (den : Int) : Int :=
 mutual
 
   def evaluate (e : Environment) (s : State) : Value → Int
-    | AvailableMoney a t => (s.accounts.findD (a, t) default).toInt
-    | Constant x         => x.toInt
+    | AvailableMoney a t => s.accounts.findD (a, t) default
+    | Constant x         => x
     | NegValue x         => - evaluate e s x
     | AddValue x y       => evaluate e s x + evaluate e s y
     | SubValue x y       => evaluate e s x - evaluate e s y
     | MulValue x y       => evaluate e s x * evaluate e s y
     | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
-    | Scale num den x    => divide (evaluate e s x * num.toInt) den.toInt
-    | ChoiceValue c      => (s.choices.findD c default).toInt
-    | TimeIntervalStart  => e.timeInterval.fst.toInt
-    | TimeIntervalEnd    => e.timeInterval.snd.toInt
-    | UseValue v         => (s.boundValues.findD v default).toInt
+    | Scale num den x    => divide (evaluate e s x * num) den
+    | ChoiceValue c      => s.choices.findD c default
+    | TimeIntervalStart  => e.timeInterval.fst.getPOSIXTime
+    | TimeIntervalEnd    => e.timeInterval.snd.getPOSIXTime
+    | UseValue v         => s.boundValues.findD v default
     | Cond o x y         => if observe e s o then evaluate e s x else evaluate e s y
 
   def observe (e : Environment) (s : State) : Observation → Bool

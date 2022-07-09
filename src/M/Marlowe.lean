@@ -1,6 +1,9 @@
 
 
 import M.Marlowe.Examples
+import M.Marlowe.Language
+import M.Marlowe.Proof
+import M.Marlowe.Semantics
 
 
 namespace Marlowe

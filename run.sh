@@ -1,1 +1,1 @@
-nix run .#executable
+nix --offline run .#executable

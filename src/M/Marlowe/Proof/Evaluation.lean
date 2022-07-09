@@ -1,7 +1,6 @@
 
 
 import M.Marlowe.Language
-import M.Marlowe.Primitives
 import M.Marlowe.Semantics
 
 
@@ -10,7 +9,6 @@ namespace Marlowe.Proof
 
 open Marlowe.Language.Contract
 open Marlowe.Language.State
-open Marlowe.Primitives (Integer integer)
 open Marlowe.Semantics (evaluate observe)
 
 
@@ -34,7 +32,7 @@ variable (c : ChoiceIdT)
 -- theorem evaluate_money
 
 
-theorem evaluate_constant (h : x' = x''.toInt) : evaluate e s (Constant x'') = x' :=
+theorem evaluate_constant (h : x' = x'') : evaluate e s (Constant x'') = x' :=
   by simp [evaluate, h]
 
 #check evaluate_constant
@@ -65,7 +63,7 @@ theorem evaluate_mul : evaluate e s (MulValue x y) = x' * y' :=
 
 
 private def check_div (m n k : Int) : Prop :=
-  evaluate e s (DivValue (Constant $ integer m) (Constant $ integer n)) =  k
+  evaluate e s (DivValue (Constant m) (Constant n)) =  k
 
 example : check_div e s    0    0    0  := by simp [evaluate, check_div]
 example : check_div e s    0    6    0  := by simp [evaluate, check_div]
@@ -102,7 +100,7 @@ example : check_div e s    9    1  ( 9) := by simp [evaluate, check_div]
 example : check_div e s ( -9)   1  (-9) := by simp [evaluate, check_div]
 
 
-theorem evaluate_scale (m n : Integer) : evaluate e s (Scale m n x) = evaluate e s (DivValue (MulValue x (Constant m)) (Constant n)) :=
+theorem evaluate_scale (m n : Int) : evaluate e s (Scale m n x) = evaluate e s (DivValue (MulValue x (Constant m)) (Constant n)) :=
   by simp [evaluate, hx]
 
 #check evaluate_scale
@@ -111,13 +109,13 @@ theorem evaluate_scale (m n : Integer) : evaluate e s (Scale m n x) = evaluate e
 -- theorem evaluate_choice
 
 
-theorem evaluate_start : evaluate e s TimeIntervalStart = e.timeInterval.fst.toInt :=
+theorem evaluate_start : evaluate e s TimeIntervalStart = e.timeInterval.fst.getPOSIXTime :=
   by simp [evaluate]
 
 #check evaluate_start
 
 
-theorem evaluate_end : evaluate e s TimeIntervalEnd = e.timeInterval.snd.toInt :=
+theorem evaluate_end : evaluate e s TimeIntervalEnd = e.timeInterval.snd.getPOSIXTime :=
   by simp [evaluate]
 
 #check evaluate_end

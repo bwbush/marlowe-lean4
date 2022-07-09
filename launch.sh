@@ -1,1 +1,1 @@
-nix run .#vscode-dev .
+nix --offline run .#vscode-dev .

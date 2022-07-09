@@ -1,12 +1,14 @@
 
 
-import M.Marlowe.Primitives
+import M.Plutus
+import M.PlutusCore
 
 
 namespace Marlowe.Language.Contract
 
 
-open Marlowe.Primitives (ByteString Integer POSIXTime)
+open Plutus.V1.Ledger.Time (POSIXTime)
+open PlutusCore (ByteString)
 
 
 def Timeout := POSIXTime
@@ -57,7 +59,7 @@ export Payee (Account Party)
 
 
 inductive BoundT where
-  | Bound : Integer → Integer → BoundT
+  | Bound : Int → Int → BoundT
 deriving BEq, Repr
 
 export BoundT (Bound)
@@ -81,13 +83,13 @@ mutual
 
   inductive Value where
     | AvailableMoney    : AccountId → TokenT → Value
-    | Constant          : Integer → Value
+    | Constant          : Int → Value
     | NegValue          : Value → Value
     | AddValue          : Value → Value → Value
     | SubValue          : Value → Value → Value
     | MulValue          : Value → Value → Value
     | DivValue          : Value → Value → Value
-    | Scale             : Integer → Integer → Value → Value
+    | Scale             : Int → Int → Value → Value
     | ChoiceValue       : ChoiceIdT → Value
     | TimeIntervalStart : Value
     | TimeIntervalEnd   : Value

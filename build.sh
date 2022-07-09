@@ -1,1 +1,1 @@
-nix build .#executable
+nix --offline build .#executable

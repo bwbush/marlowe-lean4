@@ -2,7 +2,7 @@
 
 import M.Marlowe.Language.Contract
 import M.Marlowe.Language.Input
-import M.Marlowe.Primitives
+import M.Plutus
 import Std
 
 
@@ -11,7 +11,7 @@ namespace Marlowe.Language.State
 
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
-open Marlowe.Primitives (Integer POSIXTime)
+open Plutus.V1.Ledger.Time (POSIXTime)
 open Std (RBMap)
 
 
@@ -21,7 +21,7 @@ private def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ord
                             | cmp         => cmp
 
 
-def Accounts := RBMap (AccountId × TokenT) Integer compareAT
+def Accounts := RBMap (AccountId × TokenT) Int compareAT
 
 deriving instance Repr for Accounts
 
@@ -29,7 +29,7 @@ deriving instance Repr for Accounts
 structure State :=
   accounts    : Accounts
   choices     : RBMap ChoiceIdT ChosenNum compare
-  boundValues : RBMap ValueIdT Integer compare
+  boundValues : RBMap ValueIdT Int compare
   minTime     : POSIXTime
 deriving Repr
 
@@ -61,7 +61,7 @@ deriving Repr
 export Environment (timeInterval)
 
 
-def Money := RBMap TokenT Integer compare
+def Money := RBMap TokenT Int compare
 
 instance : BEq Money where
   beq x y := x.toList == y.toList
@@ -69,7 +69,7 @@ instance : BEq Money where
 deriving instance Repr for Money
 
 
-def singletonMoney (t : TokenT) (n : Integer) : Money :=
+def singletonMoney (t : TokenT) (n : Int) : Money :=
   RBMap.ofList [(t, n)]
 
 
