@@ -3,7 +3,7 @@
 import M.Marlowe.Language.Contract
 import M.Marlowe.Language.Input
 import M.Plutus
-import Std
+import M.PlutusTx
 
 
 namespace Marlowe.Language.State
@@ -12,24 +12,18 @@ namespace Marlowe.Language.State
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Plutus.V1.Ledger.Time (POSIXTime)
-open Std (RBMap)
+open PlutusTx.AssocMap (Map)
 
 
-private def compareAT : (AccountId × TokenT) → (AccountId × TokenT) →  Ordering
-  | (a0, t0), (a1, t1) => match compare a0 a1 with
-                            | Ordering.eq => compare t0 t1
-                            | cmp         => cmp
-
-
-def Accounts := RBMap (AccountId × TokenT) Int compareAT
+def Accounts := Map (AccountId × TokenT) Int
 
 deriving instance Repr for Accounts
 
 
 structure State :=
   accounts    : Accounts
-  choices     : RBMap ChoiceIdT ChosenNum compare
-  boundValues : RBMap ValueIdT Int compare
+  choices     : Map ChoiceIdT ChosenNum
+  boundValues : Map ValueIdT Int
   minTime     : POSIXTime
 deriving Repr
 
@@ -41,9 +35,9 @@ instance : BEq State where
 
 instance : Inhabited State where
   default := {
-               accounts    := RBMap.empty
-             , choices     := RBMap.empty
-             , boundValues := RBMap.empty
+               accounts    := Map.empty
+             , choices     := Map.empty
+             , boundValues := Map.empty
              , minTime     := default
              }
 export State (accounts choices boundValues minTime)
@@ -61,7 +55,7 @@ deriving Repr
 export Environment (timeInterval)
 
 
-def Money := RBMap TokenT Int compare
+def Money := Map TokenT Int
 
 instance : BEq Money where
   beq x y := x.toList == y.toList
@@ -70,7 +64,7 @@ deriving instance Repr for Money
 
 
 def singletonMoney (t : TokenT) (n : Int) : Money :=
-  RBMap.ofList [(t, n)]
+  Map.mk [(t, n)]
 
 
 structure Payment :=

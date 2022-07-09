@@ -1,7 +1,7 @@
 
 
 import M.Marlowe.Language
-import Std
+import M.PlutusTx
 
 
 namespace Marlowe.Semantics
@@ -10,7 +10,7 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Std.RBMap (contains findD)
+open PlutusTx.AssocMap (Map)
 
 
 private def divide (num : Int) (den : Int) : Int :=
@@ -32,7 +32,7 @@ private def divide (num : Int) (den : Int) : Int :=
 mutual
 
   def evaluate (e : Environment) (s : State) : Value → Int
-    | AvailableMoney a t => s.accounts.findD (a, t) default
+    | AvailableMoney a t => s.accounts.lookup (a, t)
     | Constant x         => x
     | NegValue x         => - evaluate e s x
     | AddValue x y       => evaluate e s x + evaluate e s y
@@ -40,17 +40,17 @@ mutual
     | MulValue x y       => evaluate e s x * evaluate e s y
     | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
     | Scale num den x    => divide (evaluate e s x * num) den
-    | ChoiceValue c      => s.choices.findD c default
+    | ChoiceValue c      => s.choices.lookup c
     | TimeIntervalStart  => e.timeInterval.fst.getPOSIXTime
     | TimeIntervalEnd    => e.timeInterval.snd.getPOSIXTime
-    | UseValue v         => s.boundValues.findD v default
+    | UseValue v         => s.boundValues.lookup v
     | Cond o x y         => if observe e s o then evaluate e s x else evaluate e s y
 
   def observe (e : Environment) (s : State) : Observation → Bool
     | AndObs x y       => observe e s x && observe e s y
     | OrObs x y        => observe e s x || observe e s y
     | NotObs x         => ! observe e s x
-    | ChoseSomething c => s.choices.contains c
+    | ChoseSomething c => s.choices.member c
     | ValueGE x y      => evaluate e s x >= evaluate e s y
     | ValueGT x y      => evaluate e s x >  evaluate e s y
     | ValueLT x y      => evaluate e s x <  evaluate e s y

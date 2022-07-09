@@ -1,7 +1,7 @@
 
 
 import M.Marlowe.Language
-import Std
+import M.PlutusTx
 
 
 namespace Marlowe.Semantics
@@ -10,11 +10,11 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Std.RBMap (findD insert)
+open PlutusTx.AssocMap (Map)
 
 
 private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Int): Accounts :=
-  let previous := s.findD (a, t) default
+  let previous := s.lookup (a, t)
   s.insert (a, t) (previous + n)
 
 

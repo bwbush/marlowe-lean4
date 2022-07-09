@@ -3,6 +3,8 @@
 import M.Marlowe.Language
 import M.Marlowe.Semantics.Act
 import M.Marlowe.Semantics.Evaluate
+import M.PlutusTx
+
 
 namespace Marlowe.Semantics
 
@@ -10,7 +12,7 @@ namespace Marlowe.Semantics
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open Std (RBMap)
+open PlutusTx.AssocMap (Map)
 
 
 structure OperationResult :=
@@ -122,7 +124,7 @@ private def makePayments (accounts : Accounts) : List Payment :=
 
 private def makePayment (accounts : Accounts) (a : AccountId) (p : Payee) (t : TokenT) (payment : Int): Except String (Accounts × Payment) :=
   do
-    let available : Int := accounts.findD (a, t) default
+    let available : Int := accounts.lookup (a, t)
     let remainder : Int := available - payment
     unless (payment > 0)
       do throw "Attempt to withdraw non-positive amount."
@@ -155,7 +157,7 @@ def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Exc
     ensureValidTime e s
     match c with
       | Close            => pure
-                              $ {noInputsApplied e {s with accounts := RBMap.empty} is default with payments := makePayments (accounts s)}
+                              $ {noInputsApplied e {s with accounts := Map.empty} is default with payments := makePayments (accounts s)}
       | Pay a p t x c    => do
                               let x' := evaluate e s x
                               let (accounts', y) <- makePayment (accounts s) a p t x'

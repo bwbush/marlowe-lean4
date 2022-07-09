@@ -48,7 +48,7 @@ theorem observe_not : observe e s (NotObs a) = !a' :=
 #check observe_not
 
 
-theorem observe_chosen : observe e s (ChoseSomething c) = s.choices.contains c :=
+theorem observe_chosen : observe e s (ChoseSomething c) = s.choices.member c :=
   by simp [observe]
 
 #check observe_chosen
