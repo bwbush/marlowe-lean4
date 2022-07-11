@@ -88,7 +88,7 @@ mutual
     | Let _ []        term           => "let in " ++ showTerm term
     | Let _ bindings term            => "let " ++ showBindings bindings ++ " in " ++ showTerm term
     | IfThenElse _ term term' term'' => "if " ++ showTerm term ++ " then " ++ showTerm term' ++ " else " ++ showTerm term''
- 
+
 end
 
 instance : ToString (BindingT ann) where

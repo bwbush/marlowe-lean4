@@ -35,7 +35,7 @@ private def test04 : Term Unit :=
   Let ()
     [Binding () (Name.mk "id") test02]
     $ Constant () $ I () 42
-  
+
 example : toString test04 == "let id = (\\x -> x) in 42" :=
   by simp [toString, showTerm, test04, showBindings, showBinding, test02, check02]
 
@@ -45,7 +45,7 @@ private def test05 : Term Unit :=
   Let ()
     [Binding () f test02]
     $ Apply () (Var () f) (Constant () $ I () 1)
-  
+
 example : toString test05 == "let f = (\\x -> x) in f 1" :=
   by simp [toString, showTerm, test05, showBindings, showBinding, test02, check02, intercalate', showTerm']
 

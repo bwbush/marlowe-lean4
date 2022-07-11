@@ -18,7 +18,7 @@ private def compareList [Ord a] : List a → List a → Ordering
   | _      , []      => Ordering.gt
   | x :: xs, y :: ys => match compare x y with
                           | Ordering.eq => compareList xs ys
-                          | o           => o 
+                          | o           => o
 
 instance : Ord ByteString where
   compare x y := compareList x.bytes.toList y.bytes.toList
@@ -50,7 +50,7 @@ private def toHexByte (x : UInt8) : String :=
 
 private def toHexString (x : ByteArray) : String :=
   let f (bs : String) (b : UInt8) : String := bs ++ toHexByte b
-  x.foldl f default 
+  x.foldl f default
 
 instance : ToString ByteString where
   toString x := toHexString x.bytes

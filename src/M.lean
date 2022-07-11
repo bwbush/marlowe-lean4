@@ -10,4 +10,6 @@ def main : IO UInt32 :=
   do
     let _ <- Marlowe.main
     IO.println ""
-    PlutusCore.main
+    let _ <- PlutusCore.main
+    IO.println "\n"
+    Pluto.main

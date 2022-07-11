@@ -23,7 +23,7 @@ namespace Map
   def fromList [BEq k] : List (k × v) → Map k v :=
     mk ∘ List.foldl insertPair default
 
-  def insert [BEq k] : k → v → Map k v → Map k v 
+  def insert [BEq k] : k → v → Map k v → Map k v
     | key, value, mk entries => mk $ insertPair entries (key, value)
 
 

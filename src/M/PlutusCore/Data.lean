@@ -7,8 +7,8 @@ namespace PlutusCore
 
 
 inductive Data where
-  | Constr : Int → _root_.List Data → Data 
-  | Map    : _root_.List (Data × Data) → Data 
+  | Constr : Int → _root_.List Data → Data
+  | Map    : _root_.List (Data × Data) → Data
   | List   : _root_.List Data → Data
   | I      : Int → Data
   | B      : ByteString → Data
