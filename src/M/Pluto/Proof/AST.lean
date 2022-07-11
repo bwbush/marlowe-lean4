@@ -25,7 +25,7 @@ theorem check02 : toString test02 == "(\\x -> x)" :=
 private def test03 : Term Unit :=
   Let ()
     [Binding () (Name.mk "x") $ Constant () $ I () 1]
-    $ Constant () $ I () 42
+    $ Constant () (I () 42)
 
 example : toString test03 == "let x = 1 in 42" :=
   by simp [toString, showBinding, showBindings, showTerm, test03]
@@ -34,7 +34,7 @@ example : toString test03 == "let x = 1 in 42" :=
 private def test04 : Term Unit :=
   Let ()
     [Binding () (Name.mk "id") test02]
-    $ Constant () $ I () 42
+    $ Constant () (I () 42)
 
 example : toString test04 == "let id = (\\x -> x) in 42" :=
   by simp [toString, showTerm, test04, showBindings, showBinding, test02, check02]
@@ -44,7 +44,9 @@ private def test05 : Term Unit :=
   let f := Name.mk "f"
   Let ()
     [Binding () f test02]
-    $ Apply () (Var () f) (Constant () $ I () 1)
+    $ Apply ()
+      (Var () f)
+      $ Constant () (I () 1)
 
 example : toString test05 == "let f = (\\x -> x) in f 1" :=
   by simp [toString, showTerm, test05, showBindings, showBinding, test02, check02, intercalate', showTerm']
@@ -54,7 +56,15 @@ private def test06 : Term Unit :=
   let f := Name.mk "f"
   let res := Name.mk "res"
   Let ()
-    [Binding () f test02, Binding () res $ Delay () $ Apply () (Var () f) (Constant () $ I () 1)]
+    [
+      Binding () f
+        test02
+    , Binding () res
+        $ Delay ()
+        $ Apply ()
+          (Var () f)
+          $ Constant () (I () 1)
+    ]
     $ Var () res
 
 example : toString test06 == "let f = (\\x -> x); res = # (f 1) in res" :=
@@ -65,7 +75,15 @@ private def test07 : Term Unit :=
   let f := Name.mk "f"
   let res := Name.mk "res"
   Let ()
-    [Binding () f test02, Binding () res $ Delay () $ Apply () (Var () f) (Constant () $ I () 1)]
+    [
+      Binding () f
+        test02
+    , Binding () res
+        $ Delay ()
+        $ Apply ()
+          (Var () f) 
+          $ Constant () (I () 1)
+      ]
     $ Force ()
     $ Var () res
 
@@ -79,17 +97,24 @@ private def test08 : Term Unit :=
   let x := Name.mk "x"
   let y := Name.mk "y"
   Let ()
-    [Binding () iff $ Lambda () [cond, x, y] $ IfThenElse () (Var () cond) (Var () x) (Var () y)]
+    [
+      Binding () iff
+        $ Lambda () [cond, x, y]
+        $ IfThenElse ()
+            (Var () cond) 
+            (Var () x) 
+            (Var () y)
+    ]
     $ Force ()
     $ Apply ()
       (
         Apply ()
           (Var () iff)
-          (Delay () $ Constant () $ I () 42)
+          $ Delay () 
+          $ Constant () (I () 42)
       )
-      (
-        Delay () $ Constant () $ I () 7
-      )
+      $ Delay ()
+      $ Constant () (I () 7)
 
 example : toString test08 == "let iff = (\\cond x y -> if cond then x else y) in ! ((iff (# 42)) (# 7))" :=
   by simp [toString, showTerm, test08, showBindings, showBinding, test02, check02, intercalate', showTerm']
