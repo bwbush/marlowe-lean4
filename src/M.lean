@@ -3,6 +3,7 @@
 import M.Marlowe
 import M.Pluto
 import M.PlutusCore
+import M.PlutusTx
 
 
 def main : IO UInt32 :=
