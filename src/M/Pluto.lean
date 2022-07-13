@@ -3,6 +3,10 @@
 import M.Pluto.Examples
 import M.Pluto.Language
 
+/-  -- The Pluto proofs take about 90 minutes and 30 GB of memory to run.
+import M.Pluto.Proof
+-/
+
 
 namespace Pluto
 
