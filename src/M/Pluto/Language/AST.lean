@@ -23,6 +23,12 @@ instance : ToString Name where
 export Name (getName)
 
 
+def intercalateName : List Name → String
+  | []              => ""
+  | [Name.mk x]     => x
+  | Name.mk x :: xs => x ++ " " ++ intercalateName xs
+
+
 mutual
 
   inductive Term (ann : Type u) where
@@ -49,6 +55,15 @@ export Term (Var Lambda Apply Force Delay Constant Builtin Error Let IfThenElse)
 export BindingT (Binding)
 
 
+def hasSpace : Term ann → Bool
+  | Var _ _            => false
+  | Constant _ (D _ _) => true
+  | Constant _ _       => false
+  | Builtin _ _        => false
+  | Error _            => false
+  | _                  => true
+
+
 open BindingT Term
 
 mutual
@@ -62,30 +77,20 @@ mutual
     | b :: bs => showBinding b ++ "; " ++ showBindings bs
 
   def showTerm' (term : Term ann) : String :=
-    let rec hasSpace : List Char → Bool
-              | []        => false
-              | ' ' :: _  => true
-              | _   :: xs => hasSpace xs
     let s := showTerm term
-    if hasSpace s.toList
+    if hasSpace term
       then "(" ++ s ++ ")"
       else s
 
-  def intercalate' : List Name → String
-    | []      => ""
-    | [x]     => toString x
-    | x :: xs => toString x ++ " " ++ intercalate' xs
-
   def showTerm : Term ann → String
     | Var _ name                     => toString name
-    | Lambda _ names term            => "(\\" ++ intercalate' names ++ " -> " ++ showTerm term ++ ")"
+    | Lambda _ names term            => "(\\" ++ intercalateName names ++ " -> " ++ showTerm term ++ ")"
     | Apply _ term term'             => showTerm' term ++ " " ++ showTerm' term'
     | Force _ term                   => "! " ++ showTerm' term
     | Delay _ term                   => "# " ++ showTerm' term
     | Constant _ cons                => toString cons
     | Builtin _ builtin              => toString builtin
     | Error _                        => "Error"
-    | Let _ []        term           => "let in " ++ showTerm term
     | Let _ bindings term            => "let " ++ showBindings bindings ++ " in " ++ showTerm term
     | IfThenElse _ term term' term'' => "if " ++ showTerm term ++ " then " ++ showTerm term' ++ " else " ++ showTerm term''
 

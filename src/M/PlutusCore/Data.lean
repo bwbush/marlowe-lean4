@@ -15,29 +15,29 @@ inductive Data where
 deriving Repr
 
 
-private def showWrapped (prefixTrue : String) (suffixTrue : String) (prefixFalse : String) (wrap : Bool) (x : String) : String :=
-  if wrap
-    then prefixTrue ++ x ++ suffixTrue
-    else prefixFalse ++ x
+mutual
 
-private def mapWrapper'    := showWrapped "Map ["  "]" ","
-private def listWrapper'   := showWrapped "List [" "]" ","
+  private def intercalate' : _root_.List Data → String
+    | []      => ""
+    | [x]     => showData x
+    | x :: xs => showData x ++ "," ++ intercalate' xs
 
-private def showData (wrap : Bool): Data → String
-  | Data.Constr n []         => "Constr " ++ toString n ++ " []"
-  | Data.Constr n (f :: [])  => "Constr " ++ toString n ++ " [" ++ showData true f ++ "]"
-  | Data.Constr n (f :: fs)  => "Constr " ++ toString n ++ " [" ++ showData true f ++ showData false (Data.List fs)
-  | Data.Map  []             => "Map []"
-  | Data.Map  ((p, q) :: []) => mapWrapper'  wrap $ "(" ++ showData true p ++ "," ++ showData true q ++ ")"
-  | Data.Map  ((p, q) :: ps) => mapWrapper'  wrap $ "(" ++ showData true p ++ "," ++ showData true q ++ ")" ++ showData false (Data.Map ps)
-  | Data.List []             => "List []"
-  | Data.List (x :: [])      => listWrapper' wrap $ showData true x
-  | Data.List (x :: xs)      => listWrapper' wrap $ showData true x ++ showData false (Data.List xs)
-  | Data.I    i              => "I " ++ toString i
-  | Data.B    b              => "B " ++ toString b
+  private def intercalate'' : _root_.List (Data × Data) → String
+    | []            => ""
+    | [(k, v)]      => "(" ++ showData k ++ "," ++ showData v ++ ")"
+    | (k, v) :: kvs => "(" ++ showData k ++ "," ++ showData v ++ ")," ++ intercalate'' kvs
+
+  private def showData : Data → String
+    | Data.Constr n fs => "Constr " ++ toString n ++ " [" ++ intercalate' fs ++ "]"
+    | Data.Map  kvs    => "Map [" ++ intercalate'' kvs ++ "]"
+    | Data.List xs     => "List [" ++ intercalate' xs ++ "]"
+    | Data.I    i      => "I " ++ toString i
+    | Data.B    b      => "B " ++ toString b
+
+end
 
 instance : ToString Data where
-  toString := showData true
+  toString := showData
 
 
 end PlutusCore
