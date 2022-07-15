@@ -3,81 +3,91 @@
 import M.Marlowe.Language
 import M.Marlowe.Semantics.Act
 import M.Marlowe.Semantics.Evaluate
-import M.PlutusTx
 
 
 namespace Marlowe.Semantics
 
 
+open Marlowe.Language.Class
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open PlutusTx.AssocMap (Map)
 
 
-structure OperationResult :=
-  newState          : State
-  newContract       : Contract
-  inputsApplied     : List Input
-  payments          : List Payment
-  warnings          : List String
-  inputsRemaining   : List Input
-deriving BEq, Repr
+structure OperationResult (β ι τ : Type) (μ : Type → Type → Type) (σ : Type → Type) where
+  newState        : State β ι τ μ 
+  newContract     : Contract β ι τ
+  inputsApplied   : σ (Input β ι τ)
+  payments        : σ (Payment β ι)
+  warnings        : List String
+  inputsRemaining : σ (Input β ι τ)
 
-instance : Inhabited OperationResult where
+
+instance [Inhabited (State β ι τ μ)]
+         [AList σ (Input β ι τ)]
+         [AList σ (Payment β ι)]
+         : Inhabited (OperationResult β ι τ μ σ) where
   default := {
                newState        := default
              , newContract     := default
-             , payments        := []
-             , warnings        := []
-             , inputsApplied   := []
-             , inputsRemaining := []
+             , payments        := default
+             , warnings        := default
+             , inputsApplied   := default
+             , inputsRemaining := default
              }
 
 export OperationResult (newState newContract inputsApplied payments warnings inputsRemaining)
 
 
-private def noInputsApplied (e : Environment) (s : State) (is : List Input) (c : Contract): OperationResult :=
+private def noInputsApplied [Inhabited (OperationResult β ι τ μ σ)]
+                            (e : Environment τ) (s : State β ι τ μ) (is : σ (Input β ι τ)) (c : Contract β ι τ): OperationResult β ι τ μ σ :=
   {
-    (default : OperationResult) with
-      newState        := {s with minTime := e.timeInterval.snd}
+    (default : OperationResult β ι τ μ σ) with
+      newState        := {s with minTime := e.timeInterval.val.snd}
     , inputsRemaining := is
     , newContract     := c
   }
 
 
-private def demerkleize : Input → CaseT → Option (InputContent × Action × Contract)
+private def demerkleize [AEq β ω] [ACond ω (Option (InputContent β ι × Action β ι × Contract β ι τ))]
+                        : Input β ι τ → CaseT β ι τ → Option (InputContent β ι × Action β ι × Contract β ι τ)
   | NormalInput input                      , Case action continuation    => some (input, action, continuation)
-  | MerkleizedInput input hash continuation, MerkleizedCase action hash' => if hash == hash'
-                                                                              then some (input, action, continuation)
-                                                                              else none
+  | MerkleizedInput input hash continuation, MerkleizedCase action hash' => hash A== hash'
+                                                                              A? some (input, action, continuation)
+                                                                              A: none
   | _                                       , _                          => none
 
 
-private def demerkleize' : Input → CaseT → Except String (InputContent × Action × Contract)
+private def demerkleize' [AEq β ω] [ACond ω (Except String (InputContent β ι × Action β ι × Contract β ι τ))]
+                         : Input β ι τ → CaseT β ι τ → Except String (InputContent β ι × Action β ι × Contract β ι τ)
   | NormalInput input                      , Case action continuation    => pure (input, action, continuation)
-  | MerkleizedInput input hash continuation, MerkleizedCase action hash' => if hash == hash'
-                                                                              then pure (input, action, continuation)
-                                                                              else throw "Merkle hashes do no match."
+  | MerkleizedInput input hash continuation, MerkleizedCase action hash' => hash A== hash'
+                                                                              A? pure (input, action, continuation)
+                                                                              A: throw "Merkle hashes do no match."
   | MerkleizedInput _ _ _                  , Case _ _                    => throw "Merkleized input requires merkleized case."
   | NormalInput _                          , MerkleizedCase _ _          => throw "Merkleized case requires merkleized input."
 
 
-private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Action) : Option State :=
+private def applyInput [AInt ι] [APOSIXTime τ ι] [ABool Bool]
+                       [AEq β Bool] [AEq ι Bool] [AOrd ι Bool] [ACond Bool ι]
+                       [AMap μ (AccountId β × TokenT β) ι σ Bool]
+                       [AMap μ (ChoiceIdT β) (ChosenNum ι) σ Bool]
+                       [AMap μ (ValueIdT β) ι σ Bool]
+                       (e : Environment τ) (s : State β ι τ μ) (i : InputContent β ι) (a : Action β ι) : Option (State β ι τ μ) :=
   match i, a with
     | IDeposit account party token amount, Deposit account' party' token' value => let amount' := evaluate e s value
                                                                                    do
-                                                                                     guard $ account == account'
-                                                                                     guard $ party == party'
-                                                                                     guard $ token == token'
-                                                                                     guard $ amount == amount'
+                                                                                     guard $ account A== account'
+                                                                                     guard $ party A== party'
+                                                                                     guard $ token A== token'
+                                                                                     guard $ amount A== amount'
                                                                                      pure $ act s i
     | IChoice choiceId choiceNum         , Choice choiceId' bounds              => do
-                                                                                     guard $ choiceId == choiceId'
-                                                                                     let inBound : BoundT → Bool
+                                                                                     guard $ choiceId A== choiceId'
+                                                                                     let inBound : BoundT ι → Bool
                                                                                        | Bound lower upper =>
-                                                                                           choiceNum >= lower
-                                                                                             && choiceNum <= upper
+                                                                                           lower A<= choiceNum.val
+                                                                                             A&& choiceNum.val A<= upper
                                                                                      guard $ bounds.all inBound
                                                                                      pure $ act s i
     | INotify                            , Notify observation                   => do
@@ -86,15 +96,21 @@ private def applyInput (e : Environment) (s : State) (i : InputContent) (a : Act
     | _                                  , _                                    => none
 
 
-private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (cases : List CaseT) (t : Timeout) (c : Contract) : Except String OperationResult :=
-  let startBeforeTimeout := e.timeInterval.fst < t
-  let finishBeforeTimeout := e.timeInterval.snd < t
+private def inputsApplied [AInt ι] [APOSIXTime τ ι] [AEq β Bool] [AEq ι Bool] [AOrd ι Bool] [AOrd τ Bool] [ABool Bool] [ACond Bool ι]
+                          [Inhabited (ACond Bool (Option (InputContent β ι × Action β ι × Contract β ι τ)))]
+                          [Inhabited (OperationResult β ι τ μ List)]
+                          [AMap μ (AccountId β × TokenT β) ι σ Bool]
+                          [AMap μ (ChoiceIdT β) (ChosenNum ι) σ Bool]
+                          [AMap μ (ValueIdT β) ι σ Bool]
+                          (e : Environment τ) (s : State β ι τ μ) (inputs : List (Input β ι τ)) (cases : List (CaseT β ι τ)) (t : Timeout τ) (c : Contract β ι τ) : Except String (OperationResult β ι τ μ List) :=
+  let startBeforeTimeout := e.timeInterval.val.fst A< t.val
+  let finishBeforeTimeout := e.timeInterval.val.snd A< t.val
   if startBeforeTimeout
     then do
            unless finishBeforeTimeout
              do throw "Ambiguous time interval."
            match inputs with
-             | input :: inputs'=> let merge (prior : Option (State × Contract)) (case : CaseT) : Option (State × Contract) :=
+             | input :: inputs'=> let merge (prior : Option (State β ι τ μ × Contract β ι τ)) (case : CaseT β ι τ) : Option (State β ι τ μ × Contract β ι τ) :=
                                     prior <|> do
                                       let (content, action, continuation) <- demerkleize input case
                                       let s' <- applyInput e s content action
@@ -115,14 +131,14 @@ private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (c
     else pure $ noInputsApplied e s inputs c
 
 
-private def makePayments (accounts : Accounts) : List Payment :=
+private def makePayments (accounts : Accounts β ι μ) : σ (Payment β ι) :=
   accounts.toList.map
     (
       fun ((a, t), n) => {account := a, payee := Party a, money := singletonMoney t n}
     )
 
 
-private def makePayment (accounts : Accounts) (a : AccountId) (p : Payee) (t : TokenT) (payment : Int): Except String (Accounts × Payment) :=
+private def makePayment (accounts : Accounts β ι μ) (a : AccountId β) (p : Payee β) (t : TokenT β) (payment : ι): Except String (Accounts β ι μ × Payment β ι) :=
   do
     let available : Int := accounts.lookup (a, t)
     let remainder : Int := available - payment
@@ -137,11 +153,11 @@ private def makePayment (accounts : Accounts) (a : AccountId) (p : Payee) (t : T
       )
 
 
-private def bindVariable (e : Environment) (s : State) (v : ValueIdT) (x : Value) : State :=
+private def bindVariable (e : Environment τ) (s : State β ι τ μ) (v : ValueIdT β) (x : Value β ι) : State β ι τ μ :=
   {s with boundValues := s.boundValues.insert v $ evaluate e s x}
 
 
-private def ensureValidTime (e : Environment) (s : State) : Except String Unit :=
+private def ensureValidTime (e : Environment τ) (s : State β ι τ μ) : Except String Unit :=
   do
     let start   := e.timeInterval.fst
     let finish  := e.timeInterval.snd
@@ -152,7 +168,7 @@ private def ensureValidTime (e : Environment) (s : State) : Except String Unit :
       do throw "Finish of validity interval preceeds minimum time."
 
 
-def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Except String OperationResult :=
+def operate (e : Environment τ) (s : State β ι τ μ) (is : σ (Input β ι τ)) (c : Contract β ι τ) : Except String OperationResult β ι τ μ σ :=
   do
     ensureValidTime e s
     match c with
@@ -174,7 +190,7 @@ def operate (e : Environment) (s : State) (is : List Input) (c : Contract) : Exc
                               else pure {(noInputsApplied e s is c) with warnings := ["Assertion failed."]}
 
 
-def execute (e : Environment) (s : State) (is : List Input) (c: Contract) : Nat -> Except String (List OperationResult)
+def execute (e : Environment τ) (s : State β ι τ μ) (is : σ (Input β ι τ)) (c: Contract β ι τ) : Nat -> Except String (List OperationResult β ι τ μ σ)
   | 0 => pure []
   | n + 1 => do
                let result <- operate e s is c

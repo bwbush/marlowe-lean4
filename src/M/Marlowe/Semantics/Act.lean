@@ -1,26 +1,30 @@
 
 
 import M.Marlowe.Language
-import M.PlutusTx
 
 
 namespace Marlowe.Semantics
 
 
+open Marlowe.Language.Class
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Marlowe.Language.State
-open PlutusTx.AssocMap (Map)
 
 
-private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Int): Accounts :=
-  let previous := s.lookup (a, t)
-  s.insert (a, t) (previous + n)
+private def deposit [ABool ω] [AInt ι] [AEq β ω]
+                    [AMap μ (AccountId β × TokenT β) ι σ ω]
+                    (s : Accounts β ι μ) (a : AccountId β) (t : TokenT β) (n : ι) : Accounts β ι μ :=
+  let previous := AMap.lookup (a, t) s.val
+  Accounts.mk $ AMap.insert (a, t) (previous A+ n) s.val
 
 
-def act (s : State) : InputContent → State
+def act (s : State β ι τ μ) [ABool ω] [AInt ι] [AEq β ω]
+                            [AMap μ (AccountId β × TokenT β) ι σ ω]
+                            [AMap μ (ChoiceIdT β) (ChosenNum ι) σ ω]
+                            : InputContent β ι → State β ι τ μ 
   | IDeposit a _ t n => {s with accounts := deposit s.accounts a t n}
-  | IChoice c n      => {s with choices := s.choices.insert c n}
+  | IChoice c n      => {s with choices := AMap.insert c n s.choices}
   | INotify          => s
 
 
