@@ -39,7 +39,6 @@ mutual
     | SubValue x y       => evaluate e s x - evaluate e s y
     | MulValue x y       => evaluate e s x * evaluate e s y
     | DivValue x y       => divide (evaluate e s x) (evaluate e s y)
-    | Scale num den x    => divide (evaluate e s x * num) den
     | ChoiceValue c      => s.choices.lookup c
     | TimeIntervalStart  => e.timeInterval.fst.getPOSIXTime
     | TimeIntervalEnd    => e.timeInterval.snd.getPOSIXTime

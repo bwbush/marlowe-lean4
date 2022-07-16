@@ -13,3 +13,4 @@ def main : IO UInt32 :=
     let _ <- PlutusCore.main
     IO.println "\n"
     Pluto.main
+

@@ -13,7 +13,7 @@ open Marlowe.Language.State
 open PlutusTx.AssocMap (Map)
 
 
-private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Int): Accounts :=
+private def deposit (s : Accounts) (a : AccountId) (t : TokenT) (n : Int) : Accounts :=
   let previous := s.lookup (a, t)
   s.insert (a, t) (previous + n)
 

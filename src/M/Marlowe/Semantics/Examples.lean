@@ -6,7 +6,7 @@ import M.Plutus
 import M.PlutusCore
 
 
-namespace Marlowe.Examples
+namespace Marlowe.Semantics.Examples
 
 
 open Marlowe.Language.Contract
@@ -99,4 +99,4 @@ def checkTrivial : Bool :=
 #eval checkTrivial
 
 
-end Marlowe.Examples
+end Marlowe.Semantics.Examples

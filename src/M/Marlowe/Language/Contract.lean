@@ -89,7 +89,6 @@ mutual
     | SubValue          : Value → Value → Value
     | MulValue          : Value → Value → Value
     | DivValue          : Value → Value → Value
-    | Scale             : Int → Int → Value → Value
     | ChoiceValue       : ChoiceIdT → Value
     | TimeIntervalStart : Value
     | TimeIntervalEnd   : Value
@@ -113,7 +112,7 @@ mutual
 
 end
 
-export Value (AvailableMoney Constant NegValue AddValue SubValue MulValue DivValue Scale ChoiceValue TimeIntervalStart TimeIntervalEnd UseValue Cond)
+export Value (AvailableMoney Constant NegValue AddValue SubValue MulValue DivValue ChoiceValue TimeIntervalStart TimeIntervalEnd UseValue Cond)
 
 export Observation (AndObs OrObs NotObs ChoseSomething ValueGE ValueGT ValueLT ValueLE ValueEQ TrueObs FalseObs)
 

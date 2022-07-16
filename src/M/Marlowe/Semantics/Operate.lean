@@ -99,7 +99,7 @@ private def inputsApplied (e : Environment) (s : State) (inputs : List Input) (c
                                       let (content, action, continuation) <- demerkleize input case
                                       let s' <- applyInput e s content action
                                       pure (s', continuation)
-                                  let result := cases.foldl merge none
+                                  let result := cases.foldl merge none  -- FIXME: The semantics are incorrect here.
                                   match result with
                                     | some (s', c') => pure
                                                          {

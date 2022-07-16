@@ -4,7 +4,7 @@ import M.Marlowe.Language
 import M.Marlowe.Semantics
 
 
-namespace Marlowe.Proof
+namespace Marlowe.Semantics.Proof
 
 
 open Marlowe.Language.Contract
@@ -100,12 +100,6 @@ example : check_div e s    9    1  ( 9) := by simp [evaluate, check_div]
 example : check_div e s ( -9)   1  (-9) := by simp [evaluate, check_div]
 
 
-theorem evaluate_scale (m n : Int) : evaluate e s (Scale m n x) = evaluate e s (DivValue (MulValue x (Constant m)) (Constant n)) :=
-  by simp [evaluate, hx]
-
-#check evaluate_scale
-
-
 -- theorem evaluate_choice
 
 
@@ -130,4 +124,4 @@ theorem evaluate_cond : evaluate e s (Cond a x y) = if a' then x' else y' :=
 #check evaluate_cond
 
 
-end Marlowe.Proof
+end Marlowe.Semantics.Proof
