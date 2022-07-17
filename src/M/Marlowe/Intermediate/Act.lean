@@ -13,10 +13,9 @@ open Marlowe.Language.State
 
 
 def deposit (a : AccountId) (t : TokenT) (n : Int) : Op →  Op :=
-  let prior := GetMoney a t
-  let posterior := prior +₁ ConstantInt₁ n
-  SetMoney a t
-    $ Evaluate posterior
+  let prior := Evaluate $ GetMoney a t
+  let posterior := prior +₂ ConstantInt₂ n
+  SetMoney a t posterior
 
 
 def choose (c : ChoiceIdT) (n : Int) : Op → Op :=

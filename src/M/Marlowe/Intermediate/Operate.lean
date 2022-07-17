@@ -33,7 +33,7 @@ def guard₁ : Bool₁ → (Op → Op) → Op → Op :=
 
 def throw (s : String) (_ : Op) : Op :=
   Fail s
-  
+
 
 def demerkleize : Input → CaseT → (Contract → InputContent → Action → Op → Op) → Op → Op
   | NormalInput input                  , Case action contract       , f => f contract input action
@@ -132,7 +132,7 @@ def step (inputs : List Input) (contract : Contract) (f : Contract → Op → Op
 
 
 def operate (inputs : List Input) (contract : Contract) (f : Contract → Op → Op) : Op → Op :=
-  ensureValidTime 
+  ensureValidTime
     ∘ match contract, inputs with
         | Close           , []               => done Close
         | Close           , _                => throw "Extra inputs."

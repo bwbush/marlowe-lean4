@@ -18,19 +18,19 @@ theorem show_constant_integer (i : Int) : toString (I ann i) = toString i :=
 theorem show_constant_bytestring (s : ByteString) : toString (S ann s) = "0x" ++ toString s :=
   rfl
 
-  
+
 theorem show_constant_text (t : String) : toString (T ann t) = "\"" ++ toString t ++ "\"" :=
   rfl
 
-  
+
 theorem show_constant_unit : toString (U ann ) = "()" :=
   rfl
 
-  
+
 theorem show_constant_true : toString (B ann true) = "True" :=
   rfl
 
-  
+
 theorem show_constant_false : toString (B ann false) = "False" :=
   rfl
 
@@ -41,7 +41,7 @@ theorem show_constant_data_integer : toString (D ann (Data.I i)) = "data " ++ to
 theorem show_constant_data_bytestring : toString (D ann (Data.B b)) = "data " ++ ("0x" ++ toString b) :=
   by simp [toString, showData]
 
-  
+
 example : toString (I () 3                                           ) = "3"        := rfl
 
 example : toString (S () $ ByteString.mk $ ByteArray.mk #[0xca, 0xfe]) = "0xcafe"   := rfl

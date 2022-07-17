@@ -42,9 +42,11 @@ mutual
 end
 
 
-def evaluate₂ : Value → Int₂ := Evaluate ∘ evaluate₁
+def evaluate₂ : Value → Int₂ :=
+  Evaluate ∘ evaluate₁
 
-def observe₂ : Observation → Bool₂ := Observe ∘ observe₁
+def observe₂ : Observation → Bool₂ :=
+  Observe ∘ observe₁
 
 
 end Marlowe.Intermediate

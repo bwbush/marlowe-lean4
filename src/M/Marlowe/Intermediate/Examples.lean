@@ -12,7 +12,7 @@ open Marlowe.Intermediate
 open Marlowe.Language.Contract
 open Marlowe.Language.Input
 open Plutus.V1.Ledger.Time
-  
+
 
 def testIntermediate : Op :=
  operate
@@ -22,8 +22,8 @@ def testIntermediate : Op :=
    (
      When
        [
-         Case (Notify TrueObs) 
-           $ Assert TrueObs 
+         Case (Notify TrueObs)
+           $ Assert TrueObs
              Close
        ]
        (POSIXTime.mk 4)

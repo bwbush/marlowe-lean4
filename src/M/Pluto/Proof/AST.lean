@@ -46,7 +46,7 @@ attribute [local simp] toString toString' showTerm showTerm' showBinding showBin
 
 @[simp] theorem show_ast_builtin : toString (Builtin ann builtin) = toString builtin :=
   by simp
-  
+
 
 @[simp] theorem show_ast_let : toString (Let ann bindings term) = "let " ++ showBindings bindings ++ " in " ++ toString term :=
   by simp
@@ -131,7 +131,7 @@ private def test07 : Term Unit :=
     , Binding () res
         $ Delay ()
         $ Apply ()
-          (Var () f) 
+          (Var () f)
           $ Constant () (I () 1)
       ]
     $ Force ()
@@ -151,8 +151,8 @@ private def test08 : Term Unit :=
       Binding () iff
         $ Lambda () [cond, x, y]
         $ IfThenElse ()
-            (Var () cond) 
-            (Var () x) 
+            (Var () cond)
+            (Var () x)
             (Var () y)
     ]
     $ Force ()
@@ -160,7 +160,7 @@ private def test08 : Term Unit :=
       (
         Apply ()
           (Var () iff)
-          $ Delay () 
+          $ Delay ()
           $ Constant () (I () 42)
       )
       $ Delay ()
@@ -198,7 +198,7 @@ example : toString (Constant () $ D () $ Data.B $ ByteString.mk $ ByteArray.mk #
 
 
 example : toString (Constant () $ D () $ Data.List [Data.I 1, Data.I 2, Data.I 3]) = "data [1,2,3]" :=
-  by simp 
+  by simp
 
 
 example : toString (Constant () $ D () $ Data.List [Data.I 1, Data.B $ ByteString.mk $ ByteArray.mk #[0x41], Data.List [Data.I 42], Data.Map [(Data.B $ ByteString.mk $ ByteArray.mk #[0xfe], Data.I 7)]]) = "data [1,0x41,[42],{0xfe=7}]" :=
